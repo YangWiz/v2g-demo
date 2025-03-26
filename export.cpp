@@ -1,0 +1,71 @@
+#include <algorithm>
+#include <memory>
+#include <optional>
+
+#include "ImportMdf4.h"
+#include "mdf4.h"
+#include "stdafx.h"
+#include <stdio.h>
+#include <string>
+
+// #define __EMSCRIPTEN__ true
+
+#ifdef __EMSCRIPTEN__
+    // Emscripten-specific code goes here
+    #include <emscripten.h>
+
+    extern "C" {
+        EMSCRIPTEN_KEEPALIVE
+        double findUMax(const char* file_path) {
+            auto *pImport = new CMdf4FileImport;
+            auto result = std::vector<double>();
+
+            if (pImport->ImportFile(file_path)) {
+                pImport->getValueVecByName("EvseUMaxLimGlbICcs", result);
+            } else {
+                return -1;
+            }
+
+
+            double max_val = 0.0;  // Default value
+            if (!result.empty()) {
+                max_val = *std::max_element(result.begin(), result.end());
+            }
+
+            pImport->ReleaseFile();
+            return max_val;
+        }
+    }
+#else
+    // Native platform code
+    int main(int argc, char *argv[]) {
+        const std::unique_ptr<CMdf4FileImport> pImport (new CMdf4FileImport);
+        if (pImport->ImportFile("../test-large.mf4")) {
+            printf("load the mf4 file\n");
+        }
+
+        auto result = std::vector<double>();
+        pImport->getValueVecByName("EvseUMaxLimGlbICcs", result);
+
+        for (auto val : result) {
+            printf("%f\n", val);
+            fflush(stdout);
+        }
+
+        double max_val = 0.0;  // Default value
+        if (!result.empty()) {
+            max_val = *std::max_element(result.begin(), result.end());
+        } else {
+            printf("\nfailed to add value\n");
+        }
+        printf("Got max value: %f", max_val);
+        pImport->ReleaseFile();
+        return 0;
+    }
+
+#endif
+// #include <emscripten/emscripten.h>
+
+
+
+
