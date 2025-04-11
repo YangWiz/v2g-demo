@@ -44,6 +44,11 @@ policies, either expressed or implied, of Michael Bührer & Bernd Sparrer.
 #include ".\zlib14\zlib.h"
 #endif
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/wasmfs.h>
+#endif
+
+
 M_UNICODE MDF4LibGetVersionString() { return MDF4LIB_VERSION; }
 
 //-----------------------------------------------------------------

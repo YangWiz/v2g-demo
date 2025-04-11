@@ -33,8 +33,9 @@ policies, either expressed or implied, of Michael Bührer & Bernd Sparrer.
 #ifdef WIN32
 #include <io.h>
 #else
-#ifndef EMSCRIPTEN
+#ifndef __EMSCRIPTEN__
 #include <sys/io.h>
+#include <emscripten/wasmfs.h>
 #endif
 #include <unistd.h>
 #endif

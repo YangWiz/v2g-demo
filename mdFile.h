@@ -32,6 +32,7 @@ policies, either expressed or implied, of Michael Bührer & Bernd Sparrer.
 #include "mdfTypes.h"
 #include <stdio.h>
 #include <string.h>
+#include <emscripten/wasmfs.h>
 #ifndef WIN32
 #include <unistd.h>
 #else
@@ -39,6 +40,7 @@ policies, either expressed or implied, of Michael Bührer & Bernd Sparrer.
 #define fseeko64 _fseeki64
 #define ftello64 _ftelli64
 #endif
+
 
 #if (!_MDF4_WIN)
 #undef INVALID_HANDLE_VALUE
@@ -68,7 +70,6 @@ public:
   }
   bool OpenRead(M_FILENAME PathName) {
     FILE *hFile = fopen64(PathName, "rb");
-
     printf("read finish");
     if (!hFile) {
       perror("fopen64 failed when read or open"); // Prints system error message
