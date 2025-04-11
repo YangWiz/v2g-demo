@@ -19,12 +19,9 @@
     extern "C" {
         EMSCRIPTEN_KEEPALIVE
         double findUMax(const char* file_path) {
-            printf("got file: %s\n", file_path);
-            emscripten_console_log("opened existing OPFS file");
             wasmfs_create_opfs_backend();
             auto *pImport = new CMdf4FileImport;
             auto result = std::vector<double>();
-
 
             if (pImport->ImportFile(file_path)) {
                 pImport->getValueVecByName("EvseUMaxLimGlbICcs", result);
