@@ -19,23 +19,20 @@ async function processFile(file, fileId) {
         const fileSize = file.size;
         let offset = 0;
 
-        const initOpfs = Module.cwrap("initOpfs", "number", ["string"]);
-        const err = initOpfs(opfs_root);
-
         console.log(err);
         // Get the append function from our module
         const appendToFile = Module.cwrap("append", "number", ["string", "number", "number"]);
+
+        // TODO(Zhiyang): fix this later because of allocation cost
+        const heapPointer = Module._malloc(
+            chunkSize * Uint8Array.BYTES_PER_ELEMENT 
+        );
 
         // Process the file in chunks
         while (offset < fileSize) {
             const chunk = file.slice(offset, offset + chunkSize);
             const chunkArrayBuffer = await chunk.arrayBuffer();
             const chunkUint8Array = new Uint8Array(chunkArrayBuffer);
-
-            // TODO(Zhiyang): fix this later because of allocation cost
-            const heapPointer = Module._malloc(
-                chunkUint8Array.length * chunkUint8Array.BYTES_PER_ELEMENT
-            );
 
             Module.HEAPU8.set(chunkUint8Array, heapPointer);
 
@@ -46,10 +43,10 @@ async function processFile(file, fileId) {
                 throw new Error(`Failed to append chunk to file. Error code: ${appendResult}`);
             }
 
-            Module._free(heapPointer);
-
             offset += chunkSize;
         }
+
+        Module._free(heapPointer);
 
         const findUMax = Module.cwrap("findUMax", "number", ["string"]);
         const UMax = findUMax(tempFilename);

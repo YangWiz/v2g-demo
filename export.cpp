@@ -16,9 +16,24 @@
     #include <emscripten/console.h>
     #include <emscripten/wasmfs.h>
 
+    static backend_t my_opfs_backend;
+
+    void wasm_before_preload(void) {
+        printf("before_preload");
+
+        // preload opfs before loading the module by implementing this function.
+        my_opfs_backend = wasmfs_create_opfs_backend();
+        assert(my_opfs_backend);
+
+        const int result = wasmfs_create_directory("/opfs", 0777, my_opfs_backend);
+
+        assert(result == 0);
+    }
+
     extern "C" {
         EMSCRIPTEN_KEEPALIVE
         double findUMax(const char* file_path) {
+            wasmfs_create_opfs_backend();
             auto *pImport = new CMdf4FileImport;
             auto result = std::vector<double>();
 
@@ -37,24 +52,21 @@
             return max_val;
         }
 
-        EMSCRIPTEN_KEEPALIVE
-        int initOpfs(const char* opfs_path) {
-            // This function only needs to be called once.
+        int append(const char* opfs_path, const uint8_t* data, uint32_t size) {
             backend_t opfs = wasmfs_create_opfs_backend();
 
-            int err = wasmfs_create_directory(opfs_path, 0777, opfs);
+            int err_dir = wasmfs_create_directory("/opfs", 0777, opfs);
+            backend_t root = wasmfs_create_root_dir();
 
-            return err;
-        }
+            const auto fp = fopen64(opfs_path, "w");
 
-        int append(const char* opfs_path, const uint8_t* data, uint32_t size) {
-            auto file = fopen64(opfs_path, "a");
-            if (!file) {
-                return -1; // Error opening file
+            if (!fp) {
+                perror("fopen64 failed"); // Prints system error message
+                return -1;
             }
 
-            size_t written = fwrite(data, 1, size, file);
-            fclose(file);
+            size_t written = fwrite(data, 1, size, fp);
+            fclose(fp);
 
             if (written != size) {
                 return -2; // Error writing complete data

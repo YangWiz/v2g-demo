@@ -15,7 +15,7 @@ if(EMSCRIPTEN)
 
     # Linker flags (Emscripten settings -s*)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} \
-        -s EXPORTED_FUNCTIONS='[\"_findUMax\",\"_initOpfs\",\"_append\",\"_malloc\"]' \
+        -s EXPORTED_FUNCTIONS='[\"_findUMax\",\"_append\",\"_malloc\", \"_free\"]' \
         -s EXPORTED_RUNTIME_METHODS='[\"ccall\",\"cwrap\"]' \
         -s ALLOW_MEMORY_GROWTH=1 \
         -s FORCE_FILESYSTEM=1 \
