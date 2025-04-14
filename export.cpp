@@ -19,7 +19,6 @@
     extern "C" {
         EMSCRIPTEN_KEEPALIVE
         double findUMax(const char* file_path) {
-            wasmfs_create_opfs_backend();
             auto *pImport = new CMdf4FileImport;
             auto result = std::vector<double>();
 
@@ -36,6 +35,32 @@
 
             pImport->ReleaseFile();
             return max_val;
+        }
+
+        EMSCRIPTEN_KEEPALIVE
+        int initOpfs(const char* opfs_path) {
+            // This function only needs to be called once.
+            backend_t opfs = wasmfs_create_opfs_backend();
+
+            int err = wasmfs_create_directory(opfs_path, 0777, opfs);
+
+            return err;
+        }
+
+        int append(const char* opfs_path, const uint8_t* data, uint32_t size) {
+            auto file = fopen64(opfs_path, "a");
+            if (!file) {
+                return -1; // Error opening file
+            }
+
+            size_t written = fwrite(data, 1, size, file);
+            fclose(file);
+
+            if (written != size) {
+                return -2; // Error writing complete data
+            }
+
+            return 0; // Success
         }
     }
 #else

@@ -13,39 +13,55 @@ function cleanupFile(filename) {
 
 async function processFile(file, fileId) {
     try {
-        const tempFilename = `temp_file_${fileId}.mf4`;
+        let opfs_root = "/opfs";
+        const tempFilename = opfs_root + `/temp_file_${fileId}.mf4`;
         const chunkSize = 32 * 1024 * 1024; // 32MB chunks
         const fileSize = file.size;
         let offset = 0;
 
-        // Get a handle to the file in OPFS
-        const root = await navigator.storage.getDirectory();
-        const fileHandle = await root.getFileHandle(tempFilename, { create: true });
-        const writable = await fileHandle.createWritable();
+        const initOpfs = Module.cwrap("initOpfs", "number", ["string"]);
+        const err = initOpfs(opfs_root);
+
+        console.log(err);
+        // Get the append function from our module
+        const appendToFile = Module.cwrap("append", "number", ["string", "number", "number"]);
 
         // Process the file in chunks
         while (offset < fileSize) {
             const chunk = file.slice(offset, offset + chunkSize);
             const chunkArrayBuffer = await chunk.arrayBuffer();
+            const chunkUint8Array = new Uint8Array(chunkArrayBuffer);
 
-            // Write this chunk to the OPFS file
-            await writable.write(chunkArrayBuffer);
+            // TODO(Zhiyang): fix this later because of allocation cost
+            const heapPointer = Module._malloc(
+                chunkUint8Array.length * chunkUint8Array.BYTES_PER_ELEMENT
+            );
+
+            Module.HEAPU8.set(chunkUint8Array, heapPointer);
+
+            // Use our append function instead of the writable API
+            const appendResult = appendToFile(tempFilename, heapPointer, chunkUint8Array.length);
+
+            if (appendResult !== 0) {
+                throw new Error(`Failed to append chunk to file. Error code: ${appendResult}`);
+            }
+
+            Module._free(heapPointer);
 
             offset += chunkSize;
         }
 
-        // Close the file
-        await writable.close();
-
         const findUMax = Module.cwrap("findUMax", "number", ["string"]);
         const UMax = findUMax(tempFilename);
 
+        // Keep the original cleanup method
+        const root = await navigator.storage.getDirectory();
         await root.removeEntry(tempFilename);
 
         return {
-            umax: UMax,
             filename: file.name,
-            fileId: fileId
+            fileId: fileId,
+            umax: UMax
         };
     } catch (error) {
         console.error("Error processing file:", error);
