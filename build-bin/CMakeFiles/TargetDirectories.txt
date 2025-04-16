@@ -1,3 +1,0 @@
-/home/yanghoo/CLionProjects/mdflib/build-bin/CMakeFiles/mdflib.dir
-/home/yanghoo/CLionProjects/mdflib/build-bin/CMakeFiles/edit_cache.dir
-/home/yanghoo/CLionProjects/mdflib/build-bin/CMakeFiles/rebuild_cache.dir
