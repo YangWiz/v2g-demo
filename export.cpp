@@ -7,74 +7,73 @@
 #include "stdafx.h"
 #include <stdio.h>
 #include <string>
+#include <fcntl.h>
 
-#define EMSCRIPTEN
+// #define EMSCRIPTEN
 
 #ifdef EMSCRIPTEN
-    // Emscripten-specific code goes here
-    #include <emscripten.h>
-    #include <emscripten/console.h>
-    #include <emscripten/wasmfs.h>
+// Emscripten-specific code goes here
+#include <emscripten.h>
+#include <emscripten/console.h>
+#include <emscripten/wasmfs.h>
+#include <emscripten/trace.h>
 
-    static backend_t my_opfs_backend;
+static backend_t wasmfs_backend;
 
-    void wasm_before_preload(void) {
-        printf("before_preload");
+extern "C" {
+    EMSCRIPTEN_KEEPALIVE int main()
+    {
+        // Initialize wasmfs
+        wasmfs_backend = wasmfs_create_opfs_backend();
+        const char* rootMount = "/opfs";
+        bool exists = access(rootMount, F_OK) == 0;
+        if (!exists)
+            wasmfs_create_directory(rootMount, 0777, wasmfs_backend);
 
-        // preload opfs before loading the module by implementing this function.
-        my_opfs_backend = wasmfs_create_opfs_backend();
-        assert(my_opfs_backend);
-
-        const int result = wasmfs_create_directory("/opfs", 0777, my_opfs_backend);
-
-        assert(result == 0);
+        // Keep the standard library runtime alive even after exiting main
+        emscripten_exit_with_live_runtime();
     }
 
-    extern "C" {
-        EMSCRIPTEN_KEEPALIVE
-        double findUMax(const char* file_path) {
-            wasmfs_create_opfs_backend();
-            auto *pImport = new CMdf4FileImport;
-            auto result = std::vector<double>();
+    EMSCRIPTEN_KEEPALIVE double findUMax(const char* file_path) {
+        auto *pImport = new CMdf4FileImport;
+        auto result = std::vector<double>();
 
-            if (pImport->ImportFile(file_path)) {
-                pImport->getValueVecByName("EvseUMaxLimGlbICcs", result);
-            } else {
-                return -1;
-            }
-
-            double max_val = 0.0;  // Default value
-            if (!result.empty()) {
-                max_val = *std::max_element(result.begin(), result.end());
-            }
-
-            pImport->ReleaseFile();
-            return max_val;
+        printf("start reading file");
+        if (pImport->ImportFile(file_path)) {
+            emscripten_trace_report_memory_layout();
+            pImport->getValueVecByName("EvseUMaxLimGlbICcs", result);
+            emscripten_trace_report_memory_layout();
+        } else {
+            return -1;
         }
 
-        int append(const char* opfs_path, const uint8_t* data, uint32_t size) {
-            backend_t opfs = wasmfs_create_opfs_backend();
-
-            int err_dir = wasmfs_create_directory("/opfs", 0777, opfs);
-            backend_t root = wasmfs_create_root_dir();
-
-            const auto fp = fopen64(opfs_path, "w");
-
-            if (!fp) {
-                perror("fopen64 failed"); // Prints system error message
-                return -1;
-            }
-
-            size_t written = fwrite(data, 1, size, fp);
-            fclose(fp);
-
-            if (written != size) {
-                return -2; // Error writing complete data
-            }
-
-            return 0; // Success
+        double max_val = 0.0;  // Default value
+        if (!result.empty()) {
+            max_val = *std::max_element(result.begin(), result.end());
         }
+
+        pImport->ReleaseFile();
+        return max_val;
     }
+
+    EMSCRIPTEN_KEEPALIVE
+    int append(const char* opfs_path, const uint8_t* data, uint32_t size) {
+        bool exists = access(opfs_path, F_OK) == 0;
+        if (!exists)
+            wasmfs_create_file(opfs_path, O_CREAT, wasmfs_backend);
+
+        const auto fp = fopen64(opfs_path, "a+");
+
+        size_t written = fwrite(data, 1, size, fp);
+        fclose(fp);
+
+        if (written != size) {
+            return -2; // Error writing complete data
+        }
+
+        return 0; // Success
+    }
+}
 #else
     // Native platform code
     int main(int argc, char *argv[]) {
@@ -87,7 +86,7 @@
         pImport->getValueVecByName("EvseUMaxLimGlbICcs", result);
 
         for (auto val : result) {
-            printf("%f\n", val);
+            // printf("%f\n", val);
             fflush(stdout);
         }
 

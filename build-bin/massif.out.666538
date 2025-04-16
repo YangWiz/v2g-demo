@@ -1,0 +1,663 @@
+desc: (none)
+cmd: ./mdflib
+time_unit: i
+#-----------
+snapshot=0
+#-----------
+time=0
+mem_heap_B=0
+mem_heap_extra_B=0
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=1
+#-----------
+time=20319495
+mem_heap_B=2224685
+mem_heap_extra_B=34171
+mem_stacks_B=0
+heap_tree=peak
+n7: 2224685 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 1291144 0x114A79: __gnu_cxx::new_allocator<double>::allocate(unsigned long, void const*) (new_allocator.h:127)
+  n1: 1291144 0x11437F: std::allocator_traits<std::allocator<double> >::allocate(std::allocator<double>&, unsigned long) (alloc_traits.h:464)
+   n1: 1291144 0x1138FB: std::_Vector_base<double, std::allocator<double> >::_M_allocate(unsigned long) (stl_vector.h:346)
+    n1: 1291144 0x113117: std::vector<double, std::allocator<double> >::reserve(unsigned long) (vector.tcc:78)
+     n1: 1291144 0x1111BD: CMdf4FileImport::getValueVec(CMdf4DataGroup*, M4DGBlock*, M4CGBlock*, M4CNBlock*, std::vector<double, std::allocator<double> >&) (ImportMdf4.cpp:484)
+      n1: 1291144 0x111012: CMdf4FileImport::getValueVecByName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::vector<double, std::allocator<double> >&) (ImportMdf4.cpp:457)
+       n0: 1291144 0x10E991: main (export.cpp:86)
+ n1: 262144 0x1338DB: m4DataStream::Transpose(unsigned char*, unsigned int, unsigned int) (mdf4.cpp:2617)
+  n1: 262144 0x133ADB: m4DataStream::ReadDZBlock(unsigned long, unsigned long) (mdf4.cpp:2786)
+   n1: 262144 0x133581: m4DataStream::Read(unsigned int, void*) (mdf4.cpp:2545)
+    n1: 262144 0x11281B: CReadFileMF4::Read(unsigned int, void*) (ImportMdf4.h:59)
+     n1: 262144 0x1106A3: CMdf4DataGroup::GetRecord(M4CGBlock*, unsigned char*, unsigned long, unsigned long) (ImportMdf4.cpp:279)
+      n1: 262144 0x1112B7: CMdf4FileImport::getValueVec(CMdf4DataGroup*, M4DGBlock*, M4CGBlock*, M4CNBlock*, std::vector<double, std::allocator<double> >&) (ImportMdf4.cpp:504)
+       n1: 262144 0x111012: CMdf4FileImport::getValueVecByName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::vector<double, std::allocator<double> >&) (ImportMdf4.cpp:457)
+        n0: 262144 0x10E991: main (export.cpp:86)
+ n1: 262144 0x133A0C: m4DataStream::ReadDZBlock(unsigned long, unsigned long) (mdf4.cpp:2777)
+  n1: 262144 0x133581: m4DataStream::Read(unsigned int, void*) (mdf4.cpp:2545)
+   n1: 262144 0x11281B: CReadFileMF4::Read(unsigned int, void*) (ImportMdf4.h:59)
+    n1: 262144 0x1106A3: CMdf4DataGroup::GetRecord(M4CGBlock*, unsigned char*, unsigned long, unsigned long) (ImportMdf4.cpp:279)
+     n1: 262144 0x1112B7: CMdf4FileImport::getValueVec(CMdf4DataGroup*, M4DGBlock*, M4CGBlock*, M4CNBlock*, std::vector<double, std::allocator<double> >&) (ImportMdf4.cpp:504)
+      n1: 262144 0x111012: CMdf4FileImport::getValueVecByName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::vector<double, std::allocator<double> >&) (ImportMdf4.cpp:457)
+       n0: 262144 0x10E991: main (export.cpp:86)
+ n1: 190608 0x12BFF6: MDF4File::LoadBlock(unsigned long) (mdf4.cpp:789)
+  n2: 190608 0x12C459: MDF4File::LoadLink(m4Block&, int, unsigned short) (mdf4.cpp:837)
+   n1: 180272 0x112327: CMdf4FileImport::ImportFile(char const*) (ImportMdf4.cpp:790)
+    n0: 180272 0x10E90A: main (export.cpp:81)
+   n0: 10336 in 3 places, all below massif's threshold (1.00%)
+ n2: 85752 0x138626: dynArray<unsigned long>::resize(unsigned long) (dynArray.h:79)
+  n2: 85752 0x12B9E3: m4Block::Read(mDirectFile*, unsigned long, m4BlockHdr const&) (mdf4.cpp:698)
+   n2: 85704 0x12C16E: MDF4File::LoadBlock(unsigned long) (mdf4.cpp:822)
+    n2: 85696 0x12C459: MDF4File::LoadLink(m4Block&, int, unsigned short) (mdf4.cpp:837)
+     n1: 75904 0x112327: CMdf4FileImport::ImportFile(char const*) (ImportMdf4.cpp:790)
+      n0: 75904 0x10E90A: main (export.cpp:81)
+     n0: 9792 in 10 places, all below massif's threshold (1.00%)
+    n0: 8 in 2 places, all below massif's threshold (1.00%)
+   n0: 48 in 1 place, below massif's threshold (1.00%)
+  n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 72704 0x4916939: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+  n1: 72704 0x400647D: call_init.part.0 (dl-init.c:70)
+   n1: 72704 0x4006567: call_init (dl-init.c:33)
+    n1: 72704 0x4006567: _dl_init (dl-init.c:117)
+     n0: 72704 0x40202C9: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n0: 60189 in 26 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=2
+#-----------
+time=46314820
+mem_heap_B=1965285
+mem_heap_extra_B=34155
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=3
+#-----------
+time=78568909
+mem_heap_B=1965140
+mem_heap_extra_B=34156
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=4
+#-----------
+time=122384202
+mem_heap_B=1966766
+mem_heap_extra_B=34162
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=5
+#-----------
+time=161171207
+mem_heap_B=1965932
+mem_heap_extra_B=34164
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=6
+#-----------
+time=205126977
+mem_heap_B=1966777
+mem_heap_extra_B=34151
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=7
+#-----------
+time=232219694
+mem_heap_B=1967205
+mem_heap_extra_B=34155
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=8
+#-----------
+time=271257209
+mem_heap_B=1967011
+mem_heap_extra_B=34157
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=9
+#-----------
+time=298348428
+mem_heap_B=1966979
+mem_heap_extra_B=34157
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=10
+#-----------
+time=326420730
+mem_heap_B=1966594
+mem_heap_extra_B=34158
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=11
+#-----------
+time=370568831
+mem_heap_B=1966648
+mem_heap_extra_B=34152
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=12
+#-----------
+time=408637487
+mem_heap_B=1966978
+mem_heap_extra_B=34158
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=13
+#-----------
+time=458784474
+mem_heap_B=1966689
+mem_heap_extra_B=34159
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=14
+#-----------
+time=507977945
+mem_heap_B=1966629
+mem_heap_extra_B=34155
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=15
+#-----------
+time=547061738
+mem_heap_B=1966705
+mem_heap_extra_B=34159
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=16
+#-----------
+time=579976484
+mem_heap_B=1964775
+mem_heap_extra_B=34153
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=17
+#-----------
+time=634368347
+mem_heap_B=1965924
+mem_heap_extra_B=34156
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=18
+#-----------
+time=656443239
+mem_heap_B=1966435
+mem_heap_extra_B=34157
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=19
+#-----------
+time=689504055
+mem_heap_B=1966365
+mem_heap_extra_B=34163
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=20
+#-----------
+time=721685259
+mem_heap_B=1964712
+mem_heap_extra_B=34152
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=21
+#-----------
+time=754417693
+mem_heap_B=1966096
+mem_heap_extra_B=34160
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=22
+#-----------
+time=798434750
+mem_heap_B=1965844
+mem_heap_extra_B=34156
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=23
+#-----------
+time=841476541
+mem_heap_B=1964786
+mem_heap_extra_B=34158
+mem_stacks_B=0
+heap_tree=detailed
+n6: 1964786 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 1291144 0x114A79: __gnu_cxx::new_allocator<double>::allocate(unsigned long, void const*) (new_allocator.h:127)
+  n1: 1291144 0x11437F: std::allocator_traits<std::allocator<double> >::allocate(std::allocator<double>&, unsigned long) (alloc_traits.h:464)
+   n1: 1291144 0x1138FB: std::_Vector_base<double, std::allocator<double> >::_M_allocate(unsigned long) (stl_vector.h:346)
+    n1: 1291144 0x113117: std::vector<double, std::allocator<double> >::reserve(unsigned long) (vector.tcc:78)
+     n1: 1291144 0x1111BD: CMdf4FileImport::getValueVec(CMdf4DataGroup*, M4DGBlock*, M4CGBlock*, M4CNBlock*, std::vector<double, std::allocator<double> >&) (ImportMdf4.cpp:484)
+      n1: 1291144 0x111012: CMdf4FileImport::getValueVecByName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::vector<double, std::allocator<double> >&) (ImportMdf4.cpp:457)
+       n0: 1291144 0x10E991: main (export.cpp:86)
+ n1: 262144 0x133A0C: m4DataStream::ReadDZBlock(unsigned long, unsigned long) (mdf4.cpp:2777)
+  n1: 262144 0x133581: m4DataStream::Read(unsigned int, void*) (mdf4.cpp:2545)
+   n1: 262144 0x11281B: CReadFileMF4::Read(unsigned int, void*) (ImportMdf4.h:59)
+    n1: 262144 0x1106A3: CMdf4DataGroup::GetRecord(M4CGBlock*, unsigned char*, unsigned long, unsigned long) (ImportMdf4.cpp:279)
+     n1: 262144 0x1112B7: CMdf4FileImport::getValueVec(CMdf4DataGroup*, M4DGBlock*, M4CGBlock*, M4CNBlock*, std::vector<double, std::allocator<double> >&) (ImportMdf4.cpp:504)
+      n1: 262144 0x111012: CMdf4FileImport::getValueVecByName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::vector<double, std::allocator<double> >&) (ImportMdf4.cpp:457)
+       n0: 262144 0x10E991: main (export.cpp:86)
+ n1: 190608 0x12BFF6: MDF4File::LoadBlock(unsigned long) (mdf4.cpp:789)
+  n2: 190608 0x12C459: MDF4File::LoadLink(m4Block&, int, unsigned short) (mdf4.cpp:837)
+   n1: 180272 0x112327: CMdf4FileImport::ImportFile(char const*) (ImportMdf4.cpp:790)
+    n0: 180272 0x10E90A: main (export.cpp:81)
+   n0: 10336 in 3 places, all below massif's threshold (1.00%)
+ n2: 85752 0x138626: dynArray<unsigned long>::resize(unsigned long) (dynArray.h:79)
+  n2: 85752 0x12B9E3: m4Block::Read(mDirectFile*, unsigned long, m4BlockHdr const&) (mdf4.cpp:698)
+   n2: 85704 0x12C16E: MDF4File::LoadBlock(unsigned long) (mdf4.cpp:822)
+    n2: 85696 0x12C459: MDF4File::LoadLink(m4Block&, int, unsigned short) (mdf4.cpp:837)
+     n1: 75904 0x112327: CMdf4FileImport::ImportFile(char const*) (ImportMdf4.cpp:790)
+      n0: 75904 0x10E90A: main (export.cpp:81)
+     n0: 9792 in 10 places, all below massif's threshold (1.00%)
+    n0: 8 in 2 places, all below massif's threshold (1.00%)
+   n0: 48 in 1 place, below massif's threshold (1.00%)
+  n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 72704 0x4916939: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+  n1: 72704 0x400647D: call_init.part.0 (dl-init.c:70)
+   n1: 72704 0x4006567: call_init (dl-init.c:33)
+    n1: 72704 0x4006567: _dl_init (dl-init.c:117)
+     n0: 72704 0x40202C9: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n0: 62434 in 27 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=24
+#-----------
+time=885349234
+mem_heap_B=1965860
+mem_heap_extra_B=34156
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=25
+#-----------
+time=907335754
+mem_heap_B=1965741
+mem_heap_extra_B=34163
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=26
+#-----------
+time=950821754
+mem_heap_B=1962578
+mem_heap_extra_B=34158
+mem_stacks_B=0
+heap_tree=detailed
+n6: 1962578 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 1291144 0x114A79: __gnu_cxx::new_allocator<double>::allocate(unsigned long, void const*) (new_allocator.h:127)
+  n1: 1291144 0x11437F: std::allocator_traits<std::allocator<double> >::allocate(std::allocator<double>&, unsigned long) (alloc_traits.h:464)
+   n1: 1291144 0x1138FB: std::_Vector_base<double, std::allocator<double> >::_M_allocate(unsigned long) (stl_vector.h:346)
+    n1: 1291144 0x113117: std::vector<double, std::allocator<double> >::reserve(unsigned long) (vector.tcc:78)
+     n1: 1291144 0x1111BD: CMdf4FileImport::getValueVec(CMdf4DataGroup*, M4DGBlock*, M4CGBlock*, M4CNBlock*, std::vector<double, std::allocator<double> >&) (ImportMdf4.cpp:484)
+      n1: 1291144 0x111012: CMdf4FileImport::getValueVecByName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::vector<double, std::allocator<double> >&) (ImportMdf4.cpp:457)
+       n0: 1291144 0x10E991: main (export.cpp:86)
+ n1: 262144 0x133A0C: m4DataStream::ReadDZBlock(unsigned long, unsigned long) (mdf4.cpp:2777)
+  n1: 262144 0x133581: m4DataStream::Read(unsigned int, void*) (mdf4.cpp:2545)
+   n1: 262144 0x11281B: CReadFileMF4::Read(unsigned int, void*) (ImportMdf4.h:59)
+    n1: 262144 0x1106A3: CMdf4DataGroup::GetRecord(M4CGBlock*, unsigned char*, unsigned long, unsigned long) (ImportMdf4.cpp:279)
+     n1: 262144 0x1112B7: CMdf4FileImport::getValueVec(CMdf4DataGroup*, M4DGBlock*, M4CGBlock*, M4CNBlock*, std::vector<double, std::allocator<double> >&) (ImportMdf4.cpp:504)
+      n1: 262144 0x111012: CMdf4FileImport::getValueVecByName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::vector<double, std::allocator<double> >&) (ImportMdf4.cpp:457)
+       n0: 262144 0x10E991: main (export.cpp:86)
+ n1: 190608 0x12BFF6: MDF4File::LoadBlock(unsigned long) (mdf4.cpp:789)
+  n2: 190608 0x12C459: MDF4File::LoadLink(m4Block&, int, unsigned short) (mdf4.cpp:837)
+   n1: 180272 0x112327: CMdf4FileImport::ImportFile(char const*) (ImportMdf4.cpp:790)
+    n0: 180272 0x10E90A: main (export.cpp:81)
+   n0: 10336 in 3 places, all below massif's threshold (1.00%)
+ n2: 85752 0x138626: dynArray<unsigned long>::resize(unsigned long) (dynArray.h:79)
+  n2: 85752 0x12B9E3: m4Block::Read(mDirectFile*, unsigned long, m4BlockHdr const&) (mdf4.cpp:698)
+   n2: 85704 0x12C16E: MDF4File::LoadBlock(unsigned long) (mdf4.cpp:822)
+    n2: 85696 0x12C459: MDF4File::LoadLink(m4Block&, int, unsigned short) (mdf4.cpp:837)
+     n1: 75904 0x112327: CMdf4FileImport::ImportFile(char const*) (ImportMdf4.cpp:790)
+      n0: 75904 0x10E90A: main (export.cpp:81)
+     n0: 9792 in 10 places, all below massif's threshold (1.00%)
+    n0: 8 in 2 places, all below massif's threshold (1.00%)
+   n0: 48 in 1 place, below massif's threshold (1.00%)
+  n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 72704 0x4916939: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+  n1: 72704 0x400647D: call_init.part.0 (dl-init.c:70)
+   n1: 72704 0x4006567: call_init (dl-init.c:33)
+    n1: 72704 0x4006567: _dl_init (dl-init.c:117)
+     n0: 72704 0x40202C9: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n0: 60226 in 27 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=27
+#-----------
+time=983549026
+mem_heap_B=1965372
+mem_heap_extra_B=34164
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=28
+#-----------
+time=1027490867
+mem_heap_B=1965727
+mem_heap_extra_B=34161
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=29
+#-----------
+time=1070776183
+mem_heap_B=1964985
+mem_heap_extra_B=34151
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=30
+#-----------
+time=1114684975
+mem_heap_B=1965869
+mem_heap_extra_B=34163
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=31
+#-----------
+time=1158544109
+mem_heap_B=1965198
+mem_heap_extra_B=34162
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=32
+#-----------
+time=1202538767
+mem_heap_B=1965698
+mem_heap_extra_B=34158
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=33
+#-----------
+time=1229527830
+mem_heap_B=1965745
+mem_heap_extra_B=34159
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=34
+#-----------
+time=1269759930
+mem_heap_B=1690179
+mem_heap_extra_B=34117
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=35
+#-----------
+time=1301021379
+mem_heap_B=1962845
+mem_heap_extra_B=34163
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=36
+#-----------
+time=1344342238
+mem_heap_B=1964966
+mem_heap_extra_B=34154
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=37
+#-----------
+time=1388126954
+mem_heap_B=1965498
+mem_heap_extra_B=34150
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=38
+#-----------
+time=1414997200
+mem_heap_B=1964851
+mem_heap_extra_B=34157
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=39
+#-----------
+time=1453855197
+mem_heap_B=1962967
+mem_heap_extra_B=34153
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=40
+#-----------
+time=1497655171
+mem_heap_B=1965465
+mem_heap_extra_B=34151
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=41
+#-----------
+time=1524552607
+mem_heap_B=1965904
+mem_heap_extra_B=34160
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=42
+#-----------
+time=1553741182
+mem_heap_B=1690179
+mem_heap_extra_B=34117
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=43
+#-----------
+time=1596569696
+mem_heap_B=1964196
+mem_heap_extra_B=34156
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=44
+#-----------
+time=1640293488
+mem_heap_B=1965547
+mem_heap_extra_B=34149
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=45
+#-----------
+time=1684295583
+mem_heap_B=1965509
+mem_heap_extra_B=34155
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=46
+#-----------
+time=1727935423
+mem_heap_B=1965255
+mem_heap_extra_B=34153
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=47
+#-----------
+time=1754923761
+mem_heap_B=1966338
+mem_heap_extra_B=34158
+mem_stacks_B=0
+heap_tree=detailed
+n6: 1966338 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 1291144 0x114A79: __gnu_cxx::new_allocator<double>::allocate(unsigned long, void const*) (new_allocator.h:127)
+  n1: 1291144 0x11437F: std::allocator_traits<std::allocator<double> >::allocate(std::allocator<double>&, unsigned long) (alloc_traits.h:464)
+   n1: 1291144 0x1138FB: std::_Vector_base<double, std::allocator<double> >::_M_allocate(unsigned long) (stl_vector.h:346)
+    n1: 1291144 0x113117: std::vector<double, std::allocator<double> >::reserve(unsigned long) (vector.tcc:78)
+     n1: 1291144 0x1111BD: CMdf4FileImport::getValueVec(CMdf4DataGroup*, M4DGBlock*, M4CGBlock*, M4CNBlock*, std::vector<double, std::allocator<double> >&) (ImportMdf4.cpp:484)
+      n1: 1291144 0x111012: CMdf4FileImport::getValueVecByName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::vector<double, std::allocator<double> >&) (ImportMdf4.cpp:457)
+       n0: 1291144 0x10E991: main (export.cpp:86)
+ n1: 262144 0x133A0C: m4DataStream::ReadDZBlock(unsigned long, unsigned long) (mdf4.cpp:2777)
+  n1: 262144 0x133581: m4DataStream::Read(unsigned int, void*) (mdf4.cpp:2545)
+   n1: 262144 0x11281B: CReadFileMF4::Read(unsigned int, void*) (ImportMdf4.h:59)
+    n1: 262144 0x1106A3: CMdf4DataGroup::GetRecord(M4CGBlock*, unsigned char*, unsigned long, unsigned long) (ImportMdf4.cpp:279)
+     n1: 262144 0x1112B7: CMdf4FileImport::getValueVec(CMdf4DataGroup*, M4DGBlock*, M4CGBlock*, M4CNBlock*, std::vector<double, std::allocator<double> >&) (ImportMdf4.cpp:504)
+      n1: 262144 0x111012: CMdf4FileImport::getValueVecByName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::vector<double, std::allocator<double> >&) (ImportMdf4.cpp:457)
+       n0: 262144 0x10E991: main (export.cpp:86)
+ n1: 190608 0x12BFF6: MDF4File::LoadBlock(unsigned long) (mdf4.cpp:789)
+  n2: 190608 0x12C459: MDF4File::LoadLink(m4Block&, int, unsigned short) (mdf4.cpp:837)
+   n1: 180272 0x112327: CMdf4FileImport::ImportFile(char const*) (ImportMdf4.cpp:790)
+    n0: 180272 0x10E90A: main (export.cpp:81)
+   n0: 10336 in 3 places, all below massif's threshold (1.00%)
+ n2: 85752 0x138626: dynArray<unsigned long>::resize(unsigned long) (dynArray.h:79)
+  n2: 85752 0x12B9E3: m4Block::Read(mDirectFile*, unsigned long, m4BlockHdr const&) (mdf4.cpp:698)
+   n2: 85704 0x12C16E: MDF4File::LoadBlock(unsigned long) (mdf4.cpp:822)
+    n2: 85696 0x12C459: MDF4File::LoadLink(m4Block&, int, unsigned short) (mdf4.cpp:837)
+     n1: 75904 0x112327: CMdf4FileImport::ImportFile(char const*) (ImportMdf4.cpp:790)
+      n0: 75904 0x10E90A: main (export.cpp:81)
+     n0: 9792 in 10 places, all below massif's threshold (1.00%)
+    n0: 8 in 2 places, all below massif's threshold (1.00%)
+   n0: 48 in 1 place, below massif's threshold (1.00%)
+  n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 72704 0x4916939: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+  n1: 72704 0x400647D: call_init.part.0 (dl-init.c:70)
+   n1: 72704 0x4006567: call_init (dl-init.c:33)
+    n1: 72704 0x4006567: _dl_init (dl-init.c:117)
+     n0: 72704 0x40202C9: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n0: 63986 in 27 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=48
+#-----------
+time=1798185968
+mem_heap_B=1961818
+mem_heap_extra_B=34150
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=49
+#-----------
+time=1826918660
+mem_heap_B=1690179
+mem_heap_extra_B=34117
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=50
+#-----------
+time=1852625589
+mem_heap_B=1965117
+mem_heap_extra_B=34163
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=51
+#-----------
+time=1880561995
+mem_heap_B=1964948
+mem_heap_extra_B=34156
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=52
+#-----------
+time=1902632718
+mem_heap_B=1966244
+mem_heap_extra_B=34156
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=53
+#-----------
+time=1925156523
+mem_heap_B=1690179
+mem_heap_extra_B=34117
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=54
+#-----------
+time=1950948877
+mem_heap_B=1965525
+mem_heap_extra_B=34155
+mem_stacks_B=0
+heap_tree=detailed
+n6: 1965525 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 1291144 0x114A79: __gnu_cxx::new_allocator<double>::allocate(unsigned long, void const*) (new_allocator.h:127)
+  n1: 1291144 0x11437F: std::allocator_traits<std::allocator<double> >::allocate(std::allocator<double>&, unsigned long) (alloc_traits.h:464)
+   n1: 1291144 0x1138FB: std::_Vector_base<double, std::allocator<double> >::_M_allocate(unsigned long) (stl_vector.h:346)
+    n1: 1291144 0x113117: std::vector<double, std::allocator<double> >::reserve(unsigned long) (vector.tcc:78)
+     n1: 1291144 0x1111BD: CMdf4FileImport::getValueVec(CMdf4DataGroup*, M4DGBlock*, M4CGBlock*, M4CNBlock*, std::vector<double, std::allocator<double> >&) (ImportMdf4.cpp:484)
+      n1: 1291144 0x111012: CMdf4FileImport::getValueVecByName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::vector<double, std::allocator<double> >&) (ImportMdf4.cpp:457)
+       n0: 1291144 0x10E991: main (export.cpp:86)
+ n1: 262144 0x133A0C: m4DataStream::ReadDZBlock(unsigned long, unsigned long) (mdf4.cpp:2777)
+  n1: 262144 0x133581: m4DataStream::Read(unsigned int, void*) (mdf4.cpp:2545)
+   n1: 262144 0x11281B: CReadFileMF4::Read(unsigned int, void*) (ImportMdf4.h:59)
+    n1: 262144 0x1106A3: CMdf4DataGroup::GetRecord(M4CGBlock*, unsigned char*, unsigned long, unsigned long) (ImportMdf4.cpp:279)
+     n1: 262144 0x1112B7: CMdf4FileImport::getValueVec(CMdf4DataGroup*, M4DGBlock*, M4CGBlock*, M4CNBlock*, std::vector<double, std::allocator<double> >&) (ImportMdf4.cpp:504)
+      n1: 262144 0x111012: CMdf4FileImport::getValueVecByName(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::vector<double, std::allocator<double> >&) (ImportMdf4.cpp:457)
+       n0: 262144 0x10E991: main (export.cpp:86)
+ n1: 190608 0x12BFF6: MDF4File::LoadBlock(unsigned long) (mdf4.cpp:789)
+  n2: 190608 0x12C459: MDF4File::LoadLink(m4Block&, int, unsigned short) (mdf4.cpp:837)
+   n1: 180272 0x112327: CMdf4FileImport::ImportFile(char const*) (ImportMdf4.cpp:790)
+    n0: 180272 0x10E90A: main (export.cpp:81)
+   n0: 10336 in 3 places, all below massif's threshold (1.00%)
+ n2: 85752 0x138626: dynArray<unsigned long>::resize(unsigned long) (dynArray.h:79)
+  n2: 85752 0x12B9E3: m4Block::Read(mDirectFile*, unsigned long, m4BlockHdr const&) (mdf4.cpp:698)
+   n2: 85704 0x12C16E: MDF4File::LoadBlock(unsigned long) (mdf4.cpp:822)
+    n2: 85696 0x12C459: MDF4File::LoadLink(m4Block&, int, unsigned short) (mdf4.cpp:837)
+     n1: 75904 0x112327: CMdf4FileImport::ImportFile(char const*) (ImportMdf4.cpp:790)
+      n0: 75904 0x10E90A: main (export.cpp:81)
+     n0: 9792 in 10 places, all below massif's threshold (1.00%)
+    n0: 8 in 2 places, all below massif's threshold (1.00%)
+   n0: 48 in 1 place, below massif's threshold (1.00%)
+  n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 72704 0x4916939: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+  n1: 72704 0x400647D: call_init.part.0 (dl-init.c:70)
+   n1: 72704 0x4006567: call_init (dl-init.c:33)
+    n1: 72704 0x4006567: _dl_init (dl-init.c:117)
+     n0: 72704 0x40202C9: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n0: 63173 in 27 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=55
+#-----------
+time=1972983217
+mem_heap_B=1966546
+mem_heap_extra_B=34158
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=56
+#-----------
+time=2000407131
+mem_heap_B=1961643
+mem_heap_extra_B=34149
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=57
+#-----------
+time=2022756122
+mem_heap_B=1690179
+mem_heap_extra_B=34117
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=58
+#-----------
+time=2075662300
+mem_heap_B=1679912
+mem_heap_extra_B=33992
+mem_stacks_B=0
+heap_tree=empty

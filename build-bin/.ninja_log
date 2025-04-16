@@ -1,0 +1,12 @@
+# ninja log v5
+1	21	1744805219195077348	CMakeFiles/mdflib.dir/stdafx.cpp.o	aeccbcf2c682c0f0
+0	31	1744805219205077463	CMakeFiles/mdflib.dir/mdFile.cpp.o	9a8b9537bec825a7
+1	36	1744805219210077520	CMakeFiles/mdflib.dir/md5.cpp.o	db21a77f623655b7
+0	230	1744805219404079751	CMakeFiles/mdflib.dir/export.cpp.o	cc9aeee656b96e85
+1	338	1744805219511080981	CMakeFiles/mdflib.dir/ImportMdf4.cpp.o	bb4a75092cc0a662
+1	597	1744805219769083945	CMakeFiles/mdflib.dir/mdf4.cpp.o	5fa6b3445fb9c58d
+597	657	1744805219830084647	mdflib	78c381ad17adeed
+1	245	1744805374656543982	CMakeFiles/mdflib.dir/export.cpp.o	cc9aeee656b96e85
+245	320	1744805374729541208	mdflib	78c381ad17adeed
+1	368	1744806722728952952	CMakeFiles/mdflib.dir/ImportMdf4.cpp.o	bb4a75092cc0a662
+369	436	1744806722795953230	mdflib	78c381ad17adeed

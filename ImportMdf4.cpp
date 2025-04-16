@@ -490,7 +490,7 @@ bool CMdf4FileImport::getValueVec(CMdf4DataGroup* pGroup, M4DGBlock* dg,
 	}
 
 	// Determine optimal batch size (balance between memory usage and I/O efficiency)
-	constexpr int BATCH_SIZE = 4096;  // Adjust based on your system characteristics
+	constexpr int BATCH_SIZE = 10000;  // Adjust based on your system characteristics
 
 	// Allocate a larger buffer for batched reads
 	const size_t batchScanSize = scanSize * BATCH_SIZE;
