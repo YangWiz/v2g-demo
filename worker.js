@@ -1,6 +1,8 @@
-let fr = new FileReader();
+// Web worker script
 let processing = false;
 let fileQueue = [];
+
+importScripts('mdflib.js');
 
 // Function to clean up file from memory after processing
 function cleanupFile(filename) {
@@ -8,59 +10,6 @@ function cleanupFile(filename) {
         console.log(`Cleaned up file ${filename} from memory`);
     } catch (e) {
         console.error(`Error cleaning up file ${filename}:`, e);
-    }
-}
-
-async function processFile1(file, fileId) {
-    // This function is used to test that if the JS part can access the opfs file via their own api.
-    try {
-        let opfs_root = "/opfs";
-        const tempFilename = opfs_root + `/temp_file_${fileId}.mf4`;
-        const chunkSize = 32 * 1024 * 1024; // 32MB chunks
-        const fileSize = file.size;
-        let offset = 0;
-
-        // Verify the directory exists
-        const dirInfo = FS.readdir("/opfs");
-        console.log("OPFS directory info:", dirInfo);
-
-        // Get a handle to the file in OPFS
-        const root = await navigator.storage.getDirectory();
-
-        for await (let name of root.keys()) {
-            console.log(name);
-        }
-
-        const fileHandle = await root.getFileHandle(tempFilename, { create: true });
-        const writable = await fileHandle.createWritable();
-
-        // Process the file in chunks
-        while (offset < fileSize) {
-            const chunk = file.slice(offset, offset + chunkSize);
-            const chunkArrayBuffer = await chunk.arrayBuffer();
-
-            // Write this chunk to the OPFS file
-            await writable.write(chunkArrayBuffer);
-
-            offset += chunkSize;
-        }
-
-        // Close the file
-        await writable.close();
-
-        // const findUMax = Module.cwrap("findUMax", "number", ["string"]);
-        // const UMax = findUMax(tempFilename);
-
-        await root.removeEntry(tempFilename);
-
-        return {
-            filename: file.name,
-            fileId: fileId,
-            umax: UMax
-        };
-    } catch (error) {
-        console.error("Error processing file:", error);
-        throw error;
     }
 }
 
@@ -129,23 +78,21 @@ function processNextInQueue() {
     
     processFile(file, fileId)
         .then(result => {
-            // Dispatch event with the result
-            const resultEvent = new CustomEvent('fileProcessed_' + fileId, {
-                detail: result
+            // Post message back to main thread with the result
+            self.postMessage({
+                type: 'fileProcessed',
+                fileId: fileId,
+                result: result
             });
-            window.dispatchEvent(resultEvent);
         })
         .catch(error => {
-            // Dispatch error event
-            const errorEvent = new CustomEvent('fileProcessed_' + fileId, {
-                detail: {
-                    umax: 'Error',
-                    filename: file.name,
-                    fileId: fileId,
-                    error: error.toString()
-                }
+            // Post error message back to main thread
+            self.postMessage({
+                type: 'fileProcessError',
+                fileId: fileId,
+                filename: file.name,
+                error: error.toString()
             });
-            window.dispatchEvent(errorEvent);
         })
         .finally(() => {
             processing = false;
@@ -154,40 +101,21 @@ function processNextInQueue() {
         });
 }
 
-// Listen for file processing requests
-window.addEventListener('processFile', function(e) {
-    const { file, fileId } = e.detail;
+// Listen for messages from the main thread
+self.addEventListener('message', function(e) {
+    const data = e.data;
     
-    // Add to queue
-    fileQueue.push({ file, fileId });
-    
-    // Try to process next in queue
-    processNextInQueue();
-});
-
-// For backward compatibility with the original implementation
-document.getElementById("file-input").addEventListener("change", function() {
-    const files = this.files;
-    if (files.length === 1) {
-        // Create a processFile event for the single file
-        const processEvent = new CustomEvent('processFile', {
-            detail: {
-                file: files[0],
-                fileId: 'single_file'
-            }
+    if (data.cmd === 'processFile') {
+        // Add to queue
+        fileQueue.push({ 
+            file: data.file, 
+            fileId: data.fileId 
         });
         
-        // Listen for completion
-        window.addEventListener('fileProcessed_single_file', function(e) {
-            const result = e.detail;
-            if (window.onUMaxResult) {
-                window.onUMaxResult(result.umax);
-            }
-        }, { once: true });
-        
-        // Dispatch event to start processing
-        window.dispatchEvent(processEvent);
+        // Try to process next in queue
+        processNextInQueue();
     }
 });
 
-
+// Inform main thread that worker is ready
+self.postMessage({ type: 'ready' });

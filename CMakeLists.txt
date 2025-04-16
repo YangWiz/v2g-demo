@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(INDEX_HTML_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/index.html")
 set(WORKER_JS_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/worker.js")
 set(HEADER_JS_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/coi-serviceworker.js")
+set(INIT_JS_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/init.js")
 
 if(EMSCRIPTEN)
     if (DEBUG)
@@ -24,6 +25,8 @@ if(EMSCRIPTEN)
             -s INITIAL_MEMORY=1gb \
             --memoryprofiler \
             -gsource-map \
+            -Wbad-function-cast \
+            -Wcast-function-type \
             --tracing")
     endif()
 
@@ -60,8 +63,8 @@ add_executable(
 # --- Add Post-Build Step for Web Assets (Only for Emscripten builds) ---
 # This MUST come AFTER add_executable(mdflib)
 if(EMSCRIPTEN)
-    if(EXISTS ${INDEX_HTML_SOURCE} AND EXISTS ${WORKER_JS_SOURCE} AND EXISTS ${HEADER_JS_SOURCE})
-        message(STATUS "Found web assets to copy: ${INDEX_HTML_SOURCE}, ${WORKER_JS_SOURCE}, ${HEADER_JS_SOURCE}")
+    if(EXISTS ${INDEX_HTML_SOURCE} AND EXISTS ${WORKER_JS_SOURCE} AND EXISTS ${HEADER_JS_SOURCE} AND EXISTS ${INIT_JS_SOURCE})
+        message(STATUS "Found web assets to copy: ${INDEX_HTML_SOURCE}, ${WORKER_JS_SOURCE}, ${HEADER_JS_SOURCE} ${INIT_JS_SOURCE}.")
 
         add_custom_command(
                 TARGET mdflib  # The target this command runs after
@@ -81,8 +84,12 @@ if(EMSCRIPTEN)
                 "${HEADER_JS_SOURCE}"
                 "${CMAKE_CURRENT_BINARY_DIR}/coi-serviceworker.js"
 
+                COMMAND ${CMAKE_COMMAND} -E copy
+                "${INIT_JS_SOURCE}"
+                "${CMAKE_CURRENT_BINARY_DIR}/init.js"
+
                 # Optional: A comment displayed during the build
-                COMMENT "Copying index.html and worker.js and coi-serviceworker.js to build directory (${CMAKE_CURRENT_BINARY_DIR})"
+                COMMENT "Copying index.html and init.js and worker.js and coi-serviceworker.js to build directory (${CMAKE_CURRENT_BINARY_DIR})"
                 VERBATIM # Ensures arguments are passed correctly
         )
     else()
