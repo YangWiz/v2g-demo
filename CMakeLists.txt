@@ -12,8 +12,8 @@ if(EMSCRIPTEN)
     if (DEBUG)
         # Linker flags (Emscripten settings -s*)
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} \
-            -s EXPORTED_FUNCTIONS='[\"_findUMax\",\"_append\",\"_malloc\", \"_free\"]' \
-            -s EXPORTED_RUNTIME_METHODS='[\"ccall\",\"cwrap\"]' \
+            -s EXPORTED_FUNCTIONS='[\"_findUMax\",\"_append\",\"_malloc\",\"_free\",\"_main\"]' \
+            -s EXPORTED_RUNTIME_METHODS='[\"ccall\",\"cwrap\",\"HEAPU8\"]' \
             -s FORCE_FILESYSTEM=1 \
             -s WASMFS=1 \
             -lopfs.js \
@@ -30,8 +30,8 @@ if(EMSCRIPTEN)
     if (RELEASE)
         # Linker flags (Emscripten settings -s*)
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} \
-            -s EXPORTED_FUNCTIONS='[\"_findUMax\",\"_append\",\"_malloc\", \"_free\"]' \
-            -s EXPORTED_RUNTIME_METHODS='[\"ccall\",\"cwrap\"]' \
+            -s EXPORTED_FUNCTIONS='[\"_findUMax\",\"_append\",\"_malloc\", \"_free\",\"_main\"]'
+            -s EXPORTED_RUNTIME_METHODS='[\"ccall\",\"cwrap\",\"HEAPU8\"]' \
             -s FORCE_FILESYSTEM=1 \
             -s WASMFS=1 \
             -lopfs.js \
