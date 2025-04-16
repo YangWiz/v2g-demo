@@ -23,7 +23,6 @@ if(EMSCRIPTEN)
             -s INITIAL_MEMORY=1gb \
             --memoryprofiler \
             -gsource-map \
-            -s SINGLE_FILE=1 \
             --tracing")
     endif()
 
