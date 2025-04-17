@@ -17,8 +17,14 @@ async function processFile(file, fileId) {
     try {
         let opfs_root = "/opfs";
         const tempFilename = opfs_root + `/temp_file_${fileId}.mf4`;
-        const chunkSize = 32 * 1024; // 32MB chunks
+        let chunkSize = 0; // 320 MB chunks
+
         const fileSize = file.size;
+        if (fileSize > 1024 * 1024 * 1024) {
+            chunkSize = 512 * 1024 * 1024;
+        } else {
+            chunkSize = fileSize;
+        }
         let offset = 0;
 
         // Get the append function from our module
