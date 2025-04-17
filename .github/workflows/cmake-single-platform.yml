@@ -28,7 +28,7 @@ jobs:
       run: |
         mkdir -p build
         cd build
-        emcmake cmake .. -DDEBUG=ON
+        emcmake cmake .. -DRELEASE=ON
         emmake make
         # List contents to verify build artifacts exist
         ls -la
