@@ -489,12 +489,21 @@ bool CMdf4FileImport::getValueVec(CMdf4DataGroup* pGroup, M4DGBlock* dg,
 		return false;
 	}
 
+	// We leave 200 mb space for our other usages.
+	// We also need to consider the size of the result.
+	// The wasm32 heap memory has 2000 mb, so we have 1800 mb left.
+	// The result size is as same as the buffer size, and it's double (8 Bytes)
+	// So size(result) = 8 * batchSize
+	// We declare batchSize as x, then we get 9x <= 1800 mb.
+	// Then we know x <= 200 mb
+
 	// Determine optimal batch size (balance between memory usage and I/O efficiency)
-	constexpr int BATCH_SIZE = 10000;  // Adjust based on your system characteristics
+	const int BATCH_SIZE = (1024 * 1024) / scanSize;  // Adjust based on your system characteristics
 
 	// Allocate a larger buffer for batched reads
 	const size_t batchScanSize = scanSize * BATCH_SIZE;
 	const std::unique_ptr<M_UINT8[]> batchScan(new M_UINT8[batchScanSize]);
+	printf("batch size is %d, scan size is %d\n", batchScanSize, scanSize);
 
 	for (int i = 0; i < cycleCount; i += BATCH_SIZE) {
 		// Calculate actual batch size (handle last partial batch)

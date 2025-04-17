@@ -9,7 +9,6 @@
 #include <string>
 #include <fcntl.h>
 
-#define EMSCRIPTEN
 
 #ifdef EMSCRIPTEN
 // Emscripten-specific code goes here
