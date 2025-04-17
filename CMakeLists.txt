@@ -33,7 +33,7 @@ if(EMSCRIPTEN)
     if (RELEASE)
         # Linker flags (Emscripten settings -s*)
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} \
-            -s EXPORTED_FUNCTIONS='[\"_findUMax\",\"_append\",\"_malloc\", \"_free\",\"_main\"]'
+            -s EXPORTED_FUNCTIONS='[\"_findUMax\",\"_append\",\"_malloc\", \"_free\",\"_main\"]' \
             -s EXPORTED_RUNTIME_METHODS='[\"ccall\",\"cwrap\",\"HEAPU8\"]' \
             -s FORCE_FILESYSTEM=1 \
             -s WASMFS=1 \
@@ -43,7 +43,7 @@ if(EMSCRIPTEN)
             -s MALLOC=dlmalloc \
             -s INITIAL_MEMORY=2gb \
             -flto \
-            -O3 ") # -O3 often needed at link time too for LTO
+            -O3") # -O3 often needed at link time too for LTO
     endif()
 endif() # End if(EMSCRIPTEN) for flags
 
