@@ -36,20 +36,18 @@ extern "C" {
 
     EMSCRIPTEN_KEEPALIVE double findUMax(const char* file_path) {
         auto *pImport = new CMdf4FileImport;
-        auto result = std::vector<double>();
+        const auto result = new std::vector<double>();
 
         printf("start reading file");
         if (pImport->ImportFile(file_path)) {
-            emscripten_trace_report_memory_layout();
-            pImport->getValueVecByName("EvseUMaxLimGlbICcs", result);
-            emscripten_trace_report_memory_layout();
+            pImport->getValueVecByName("EvseUMaxLimGlbICcs", *result);
         } else {
             return -1;
         }
 
         double max_val = 0.0;  // Default value
-        if (!result.empty()) {
-            max_val = *std::max_element(result.begin(), result.end());
+        if (!result->empty()) {
+            max_val = *std::max_element(result->begin(), result->end());
         }
 
         pImport->ReleaseFile();

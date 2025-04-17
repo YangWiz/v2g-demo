@@ -724,21 +724,10 @@ void CMdf4FileImport::DisplayData(CMdf4DataGroup* pGroup, M4DGBlock *dg,M4CGBloc
 
 BOOL CMdf4FileImport::ImportFile(const char *szFileName)
 {
-	int i,j;
 	if (!m_m4.Open(szFileName)) {
 		printf("failed to load the mf4 file %s.", szFileName);
 		return FALSE;
 	}
-
-	// ID Block
-	mdfFileId *pId = m_m4.GetIdBlk();
-	// printf("id_file  = %s\n",pId->id_file);
-	// printf("id_vers  = %s\n",pId->id_vers);
-	// printf("id_prog  = %s\n",pId->id_prog);
-	// printf("id_order = %s\n",pId->id_order==0 ? "Intel" : "Motorola");
-	// printf("id_float = %s\n",pId->id_float==0 ? "IEEE 754" : "(unsupported)");
-	// printf("id_ver   = %d\n", (int)pId->id_ver);
-
 	// Show time: don't know how to handle local/GMT time under Linux
 	M4HDBlock *pHdr = m_m4.GetHdr();
 	// printf("Time: %ld\n", static_cast<long>(pHdr->hd_start_time.time_ns/1000000000));
@@ -764,32 +753,6 @@ BOOL CMdf4FileImport::ImportFile(const char *szFileName)
 		dg = static_cast<M4DGBlock *>(m_m4.LoadLink(*dg, M4DGBlock::dg_dg_next));
 	}
 	m_nDataGroups = nGrp;
-	for (i=0; i<nGrp; i++)
-	{
-		CMdf4DataGroup* pGroup = m_vDataGroups[i];
-		M4DGBlock *dg = pGroup->m_dg;
-		// printf("Group %d of %d:\n",i+1,m_nDataGroups);
-		// DisplayGroup(pGroup);
-		cg = (M4CGBlock *)m_m4.LoadLink(*dg, M4DGBlock::dg_cg_first);
-		// DisplayChannelGroup(cg);
-		j = 0;
-		auto *cn = static_cast<M4CNBlock *>(m_m4.LoadLink(*cg, M4CGBlock::cg_cn_first, M4ID_CN));
-		while (cn)
-		{
-			// DisplayChannel(cn,++j);
-			if (cn->hasLink(M4CNBlock::cn_cc_conversion))
-			{
-				M4CCBlock *cc = (M4CCBlock *)m_m4.LoadLink(*cn, M4CNBlock::cn_cc_conversion, M4ID_CC);
-				if (cc)
-				{
-					// DisplayConversion(cc);
-					delete cc;
-				}
-			}
-			// DisplayData(pGroup, dg,cg,cn);
-			cn = (M4CNBlock *)m_m4.LoadLink(*cn, M4CNBlock::cn_cn_next, M4ID_CN);
-		}
-	}
 
 	return TRUE;
 }
