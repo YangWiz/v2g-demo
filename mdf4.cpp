@@ -835,6 +835,7 @@ m4Block *MDF4File::LoadLink(m4Block &parent,int linkNo)
 #endif
 m4Block *MDF4File::LoadLink(m4Block &parent, int linkNo, M_UINT16 id) {
   m4Block *p = LoadBlock(parent.getLink(linkNo));
+
   if (p && id && p->hdrID() != id) {
 #ifdef _DEBUG
     char c1, c2, d1, d2;
@@ -850,6 +851,36 @@ m4Block *MDF4File::LoadLink(m4Block &parent, int linkNo, M_UINT16 id) {
   return p;
 }
 #endif // [E]---- READ  Support
+
+bool MDF4File::initReadBuffer(const uint64_t batch_size) {
+  if (this->curr_state != UNINITIALIZED) {
+    return false;
+  }
+  this->waited_tasks->reserve(batch_size);
+  this->curr_state = IDLE;
+  return true;
+}
+
+bool MDF4File::addReadTask(m4Block &parent, const int linkNo, const M_UINT16 id) const {
+  // UNSAFE (Since the original C++ code didn't use the shared_pointer, so I can only use this)
+  if (this->waited_tasks->size() >= this->waited_tasks->capacity()) {
+    return false;
+  }
+
+  const auto task = Task(parent, linkNo, id);
+  this->waited_tasks->push_back(task);
+  return true;
+}
+
+m4Block *MDF4File::commitReadTask() {
+  for (const Task& task : *(this->waited_tasks)) {
+    printf("task id: %d, linkNo: %d\n", task.id, task.linkNo);
+  }
+
+  this->curr_state = RUNNING;
+  return nullptr;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Helpers for SR-Blocks

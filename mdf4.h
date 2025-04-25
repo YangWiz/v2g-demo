@@ -2679,6 +2679,26 @@ protected:
   bool m_bPrepared;
 };
 
+class ReaderManager {
+public:
+  ReaderManager(uint64_t batch_size);
+  virtual ~ReaderManager();
+  virtual void close();
+};
+
+class Task {
+public:
+  m4Block& parent;  // Shared ownership
+  int linkNo;
+  M_UINT16 id;
+
+  Task(m4Block &parent_ptr, int linkNo_val, M_UINT16 id_val)
+    : parent(parent_ptr),
+      linkNo(linkNo_val),
+      id(id_val)
+  { }
+};
+
 class MDF4File : public mDirectFile {
 public:
   MDF4File();
@@ -2692,6 +2712,11 @@ public:
   m4Block *LoadBlock(M_LINK At);
   // m4Block *LoadLink(m4Block &parent,int linkNo);
   m4Block *LoadLink(m4Block &parent, int linkNo, M_UINT16 id = 0);
+
+  bool initReadBuffer(uint64_t batch_size);
+  bool addReadTask(m4Block &parent, int linkNo, M_UINT16 id = 0) const;
+  m4Block *commitReadTask();
+
   bool LoadBlkHdr(M_LINK At, m4BlockHdr &h);
 #endif // [E]---- READ  Support
 
@@ -2793,8 +2818,16 @@ protected:
   M_INT64 get_i64_mask(M_INT32 idx);
   // End: Helper for SR blocks:
 
-protected:
   mdfFileId m_Id;
   M4HDBlock m_Hdr;
   idCounts m_recCnt;
+
+private:
+  enum ReadState {
+    UNINITIALIZED, IDLE, RUNNING
+  };
+
+  ReadState curr_state = UNINITIALIZED;
+
+  std::vector<Task> *waited_tasks = new std::vector<Task>();;
 };

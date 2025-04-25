@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Volvo CCS V2G Decoder</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Use local D3.js -->
+    <script src="d3.v7.min.js"></script>
     <style>
         :root {
             --primary-color: #003057;
@@ -362,6 +364,148 @@
             background-color: var(--primary-color);
             color: white;
         }
+
+        .channel-names-section {
+            margin-top: 40px;
+            border-top: 1px solid var(--accent-color);
+            padding-top: 20px;
+        }
+
+        .channel-list {
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--accent-color);
+            border-radius: 4px;
+            padding: 10px;
+        }
+
+        .channel-item {
+            padding: 8px;
+            border-bottom: 1px solid var(--secondary-color);
+            font-family: monospace;
+        }
+
+        .channel-item:last-child {
+            border-bottom: none;
+        }
+
+        #show-channels-btn {
+            margin-top: 20px;
+        }
+
+        .search-container {
+            margin: 10px 0;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--accent-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .channel-item {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .channel-item:hover {
+            background-color: rgba(74, 108, 247, 0.1);
+        }
+        
+        #chart-container {
+            margin: 20px auto;
+            width: 800px;  /* Match the chart width */
+            height: 400px; /* Match the chart height */
+            overflow: hidden;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        #value-points-chart {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .tooltip {
+            position: absolute;
+            padding: 8px;
+            background: rgba(0, 48, 87, 0.9);
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .channel-group {
+            margin-bottom: 15px;
+        }
+        
+        .channel-group-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 8px 15px;
+            font-weight: bold;
+            border-radius: 4px 4px 0 0;
+            margin-bottom: 5px;
+        }
+        
+        .channel-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+            margin: 2px 0;
+        }
+        
+        .channel-item i {
+            margin-right: 10px;
+            color: var(--primary-color);
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+        
+        .channel-item:hover {
+            background: rgba(0, 48, 87, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .channel-item:hover i {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+        
+        .channel-item.active {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .channel-item.active i {
+            color: white;
+            opacity: 1;
+        }
+        
+        #chart-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+        
+        .grid line {
+            stroke: #e0e0e0;
+        }
+        
+        .grid path {
+            stroke-width: 0;
+        }
     </style>
 <body>
     <div class="container">
@@ -372,18 +516,22 @@
         </header>
         
         <div class="card">
-            <h2><i class="fas fa-upload"></i> Upload Files or Directory</h2>
+            <h2><i class="fas fa-upload"></i> Upload File</h2>
             <div class="file-input-container" id="drop-area">
-                <i class="fas fa-folder-open"></i>
-                <h3>Drag & Drop Files or Directory</h3>
-                <p>Supported formats: .mf4 and .pcap</p>
-                <input type="file" id="file-input" multiple webkitdirectory directory>
+                <i class="fas fa-file"></i>
+                <h3>Drag & Drop a File</h3>
+                <p>Select a single .mf4 or .pcap file</p>
+                <input 
+                    type="file" 
+                    id="file-input" 
+                    accept=".mf4,.pcap"
+                    single>
             </div>
             <div class="progress-container" id="progress-container">
                 <div class="progress-bar">
                     <div class="progress-fill" id="progress-fill"></div>
                 </div>
-                <div class="progress-text" id="progress-text">Processing files: 0/0</div>
+                <div class="progress-text" id="progress-text">Processing file...</div>
             </div>
             <div class="error-message" id="error-message">
                 <i class="fas fa-exclamation-circle"></i> Error: Only .mf4 and .pcap files are supported.
@@ -393,39 +541,8 @@
         
         <div class="results-container" id="results-container">
             <div class="card">
-                <div class="toggle-group" id="view-toggle">
-                    <button class="toggle-btn active" data-view="summary">Summary View</button>
-                    <button class="toggle-btn" data-view="detail">Detailed View</button>
-                </div>
-                
-                <div id="summary-view">
-                    <h2><i class="fas fa-chart-pie"></i> Analysis Summary <span class="file-count" id="file-count">0 files</span></h2>
-                    <div class="stats-grid">
-                        <div class="stats-item">
-                            <div class="stats-label">Average UMax</div>
-                            <div class="stats-value" id="average-umax">0</div>
-                            <div class="stats-label">Volts</div>
-                        </div>
-                        <div class="stats-item">
-                            <div class="stats-label">Maximum UMax</div>
-                            <div class="stats-value" id="max-umax">0</div>
-                            <div class="stats-label">Volts</div>
-                        </div>
-                        <div class="stats-item">
-                            <div class="stats-label">Minimum UMax</div>
-                            <div class="stats-value" id="min-umax">0</div>
-                            <div class="stats-label">Volts</div>
-                        </div>
-                        <div class="stats-item">
-                            <div class="stats-label">Processed Files</div>
-                            <div class="stats-value" id="processed-count">0</div>
-                            <div class="stats-label">Files</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div id="detail-view" style="display: none;">
-                    <h2><i class="fas fa-list"></i> Detailed Results</h2>
+                <div id="detail-view">
+                    <h2><i class="fas fa-list"></i> Maximum Voltage Results</h2>
                     <div class="table-container">
                         <table class="results-table" id="results-table">
                             <thead>
@@ -440,6 +557,24 @@
                                 <!-- Results will be added here dynamically -->
                             </tbody>
                         </table>
+                    </div>
+
+                    <div class="channel-names-section">
+                        <h3>View Channel Names</h3>
+                        <div class="search-container">
+                            <input type="text" id="channel-search" placeholder="Search channels..." class="search-input">
+                        </div>
+                        <button class="button" id="show-channels-btn">
+                            <i class="fas fa-list-ul"></i> Show Channel Names
+                        </button>
+                        <div id="channel-names-container" style="display: none;">
+                            <div class="channel-list" id="channel-list">
+                                <!-- Channel names will be added here dynamically -->
+                            </div>
+                        </div>
+                        <div id="chart-container">
+                            <svg id="value-points-chart"></svg>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -463,47 +598,56 @@
             const progressContainer = document.getElementById('progress-container');
             const progressFill = document.getElementById('progress-fill');
             const progressText = document.getElementById('progress-text');
-            const fileCount = document.getElementById('file-count');
             const resultsTbody = document.getElementById('results-tbody');
-            const averageUmax = document.getElementById('average-umax');
-            const maxUmax = document.getElementById('max-umax');
-            const minUmax = document.getElementById('min-umax');
-            const processedCount = document.getElementById('processed-count');
-            const viewToggle = document.getElementById('view-toggle');
-            const summaryView = document.getElementById('summary-view');
-            const detailView = document.getElementById('detail-view');
+            const showChannelsBtn = document.getElementById('show-channels-btn');
+            const channelNamesContainer = document.getElementById('channel-names-container');
+            const channelList = document.getElementById('channel-list');
             
-            // Toggle between summary and detail views
-            viewToggle.addEventListener('click', function(e) {
-                if (e.target.classList.contains('toggle-btn')) {
-                    // Remove active class from all buttons
-                    const buttons = viewToggle.querySelectorAll('.toggle-btn');
-                    buttons.forEach(btn => btn.classList.remove('active'));
-                    
-                    // Add active class to clicked button
-                    e.target.classList.add('active');
-                    
-                    // Show/hide appropriate view
-                    const viewType = e.target.dataset.view;
-                    if (viewType === 'summary') {
-                        summaryView.style.display = 'block';
-                        detailView.style.display = 'none';
-                    } else {
-                        summaryView.style.display = 'none';
-                        detailView.style.display = 'block';
-                    }
+            // Store processed files
+            let processedFiles = [];
+
+            // Modify the processFiles function
+            const originalProcessFiles = processFiles;
+            processFiles = function(event) {
+                // Reset channel names container
+                channelNamesContainer.style.display = 'none';
+                showChannelsBtn.innerHTML = '<i class="fas fa-list-ul"></i> Show Channel Names';
+                channelList.innerHTML = '';
+                processedFiles = [];
+                
+                // Call the original function
+                return originalProcessFiles.call(this, event);
+            };
+
+            // Modify the processNextFile function to store file information
+            const originalProcessNextFile = processNextFile;
+            processNextFile = function(files, index) {
+                if (index < files.length) {
+                    const file = files[index];
+                    processedFiles.push(file);
                 }
-            });
-            
-            // Stats for summary
-            let results = {
-                files: [],
-                totalUmax: 0,
-                maxUmax: 0,
-                minUmax: Infinity,
-                validFileCount: 0
+                return originalProcessNextFile.call(this, files, index);
             };
             
+            // Show channels button click handler
+            showChannelsBtn.addEventListener('click', async function() {
+                const isVisible = channelNamesContainer.style.display !== 'none';
+                
+                if (isVisible) {
+                    channelNamesContainer.style.display = 'none';
+                    showChannelsBtn.innerHTML = '<i class="fas fa-list-ul"></i> Show Channel Names';
+                } else {
+                    showChannelsBtn.innerHTML = '<i class="fas fa-times"></i> Hide Channel Names';
+                    channelNamesContainer.style.display = 'block';
+                    channelList.innerHTML = '<div class="loading">Loading channel names...</div>';
+                    
+                    // Request channel names from worker
+                    worker.postMessage({
+                        cmd: 'getChannelNames'
+                    });
+                }
+            });
+
             // Handle file selection
             fileInput.addEventListener('change', processFiles);
             
@@ -538,17 +682,25 @@
             function handleDrop(e) {
                 const dt = e.dataTransfer;
                 const files = dt.files;
-                processFiles({ target: { files: files }});
+                
+                if (files.length > 1) {
+                    errorMessage.textContent = 'Please upload only one file at a time.';
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+                
+                processFiles({ target: { files: [files[0]] }});
             }
             
             function processFiles(event) {
-                const files = Array.from(event.target.files)
-                    .filter(file => {
-                        const fileExtension = file.name.split('.').pop().toLowerCase();
-                        return fileExtension === 'mf4' || fileExtension === 'pcap';
-                    });
+                const file = event.target.files[0]; // Get only the first file
                 
-                if (files.length === 0) {
+                if (!file) {
+                    return;
+                }
+                
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                if (fileExtension !== 'mf4' && fileExtension !== 'pcap') {
                     errorMessage.style.display = 'block';
                     return;
                 }
@@ -569,14 +721,13 @@
                 errorMessage.style.display = 'none';
                 loader.style.display = 'block';
                 progressContainer.style.display = 'block';
-                fileCount.textContent = `${files.length} files`;
-                progressText.textContent = `Processing files: 0/${files.length}`;
+                progressText.textContent = 'Processing file...';
                 
                 // Show results container
                 resultsContainer.classList.add('visible');
                 
-                // Process files one by one
-                processNextFile(files, 0);
+                // Process the single file
+                processNextFile([file], 0);
             }
             
             function processNextFile(files, index) {
@@ -646,10 +797,6 @@
                 
                 // Update summary stats
                 const avg = results.validFileCount > 0 ? results.totalUmax / results.validFileCount : 0;
-                averageUmax.textContent = avg.toFixed(2);
-                maxUmax.textContent = results.maxUmax.toFixed(2);
-                minUmax.textContent = results.validFileCount > 0 ? results.minUmax.toFixed(2) : '0';
-                processedCount.textContent = results.validFileCount;
                 
                 // Complete progress bar
                 progressFill.style.width = '100%';

@@ -150,7 +150,17 @@ public:
 
   bool displayByName(const std::string &name);
 
+  bool getAllChannels(std::vector<std::string> &result);
+
+  double getMinValueByName(const std::string &name);
+
+  bool getPointsVecByName(const std::string &name, std::vector<std::pair<double, double>> &result);
+
+  double getMaxValueByName(const std::string &name);
+
   bool getValueVecByName(const std::string &name, std::vector<double> &result);
+
+  bool getPointsVec(CMdf4DataGroup *pGroup, M4DGBlock *dg, M4CGBlock *cg, M4CNBlock *cn, std::vector<std::pair<double, double>> &result);
 
   bool getValueVec(CMdf4DataGroup *pGroup, M4DGBlock *dg, M4CGBlock *cg, M4CNBlock *cn, std::vector<double> &result);
 

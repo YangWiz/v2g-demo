@@ -10,7 +10,9 @@
 #include <fcntl.h>
 
 
+#define EMSCRIPTEN
 #ifdef EMSCRIPTEN
+
 // Emscripten-specific code goes here
 #include <emscripten.h>
 #include <emscripten/console.h>
@@ -18,13 +20,22 @@
 #include <emscripten/trace.h>
 
 static backend_t wasmfs_backend;
+static std::string temp_file_path = "/root/temp_file";
+static auto cn_names = new std::vector<std::string>();
+static auto points = new std::vector<std::pair<double, double>>();
 
 extern "C" {
     EMSCRIPTEN_KEEPALIVE int main()
     {
         // Initialize wasmfs
-        wasmfs_backend = wasmfs_create_opfs_backend();
-        const char* rootMount = "/opfs";
+#ifdef MEM_FS
+        wasmfs_backend = wasmfs_create_memory_backend();
+#elif OPFS_FS
+        wasmfs_backend = wasmfs_create_opfs_backend()();
+#endif
+        // We set the memory backend as the default fs.
+        wasmfs_backend = wasmfs_create_memory_backend();
+        const char* rootMount = "/root";
         bool exists = access(rootMount, F_OK) == 0;
         if (!exists)
             wasmfs_create_directory(rootMount, 0777, wasmfs_backend);
@@ -33,12 +44,64 @@ extern "C" {
         emscripten_exit_with_live_runtime();
     }
 
-    EMSCRIPTEN_KEEPALIVE double findUMax(const char* file_path) {
+    EMSCRIPTEN_KEEPALIVE uint64_t getAllChannelNames() {
+        auto *pImport = new CMdf4FileImport;
+        cn_names->clear();
+
+        if (pImport->ImportFile(temp_file_path.c_str())) {
+            pImport->getAllChannels(*cn_names);
+            pImport->ReleaseFile();
+            delete pImport;
+            return reinterpret_cast<uint64_t>(cn_names);
+        } else {
+            delete pImport;
+            return -1;
+        }
+    }
+
+    // Add helper functions to access vector data
+    EMSCRIPTEN_KEEPALIVE size_t getChannelNamesSize() {
+        return cn_names->size();
+    }
+
+    EMSCRIPTEN_KEEPALIVE const char* getChannelNameAt(size_t index) {
+        if (index < cn_names->size()) {
+            return cn_names->at(index).c_str();
+        }
+        return nullptr;
+    }
+
+    EMSCRIPTEN_KEEPALIVE uint64_t getAllValuePoints(const char* cn_name) {
+        auto *pImport = new CMdf4FileImport;
+        points->clear();
+
+        if (pImport->ImportFile(temp_file_path.c_str())) {
+            pImport->getPointsVecByName(cn_name, *points);
+            pImport->ReleaseFile();
+            delete pImport;
+            return reinterpret_cast<uint64_t>(points);
+        } else {
+            delete pImport;
+            return -1;
+        }
+    }
+
+    EMSCRIPTEN_KEEPALIVE size_t getPointsSize() {
+        return points->size();
+    }
+
+    EMSCRIPTEN_KEEPALIVE uint64_t getPointAt(size_t index) {
+        if (index < points->size()) {
+            return reinterpret_cast<uint64_t>(&points->at(index));
+        }
+        return 0;
+    }
+
+    EMSCRIPTEN_KEEPALIVE double findUMax() {
         auto *pImport = new CMdf4FileImport;
         const auto result = new std::vector<double>();
 
-        printf("start reading file");
-        if (pImport->ImportFile(file_path)) {
+        if (pImport->ImportFile(temp_file_path.c_str())) {
             pImport->getValueVecByName("EvseUMaxLimGlbICcs", *result);
         } else {
             return -1;
@@ -54,12 +117,32 @@ extern "C" {
     }
 
     EMSCRIPTEN_KEEPALIVE
-    int append(const char* opfs_path, const uint8_t* data, uint32_t size) {
-        bool exists = access(opfs_path, F_OK) == 0;
-        if (!exists)
-            wasmfs_create_file(opfs_path, O_CREAT, wasmfs_backend);
+    int start_new_write() {
+        // First try to remove the existing file if it exists
+        const bool exists = access(temp_file_path.c_str(), F_OK) == 0;
+        if (exists) {
+            if (remove(temp_file_path.c_str()) != 0) {
+                return -1; // Failed to remove existing file
+            }
+        }
 
-        const auto fp = fopen64(opfs_path, "a+");
+        // Create a new empty file
+        const auto fp = fopen64(temp_file_path.c_str(), "w");
+        if (!fp) {
+            return -2; // Failed to create new file
+        }
+        fclose(fp);
+
+        return 0; // Success
+    }
+
+    EMSCRIPTEN_KEEPALIVE
+    int append(const uint8_t* data, uint32_t size) {
+        const bool exists = access(temp_file_path.c_str(), F_OK) == 0;
+        if (!exists)
+            wasmfs_create_file(temp_file_path.c_str(), O_CREAT, wasmfs_backend);
+
+        const auto fp = fopen64(temp_file_path.c_str(), "a+");
 
         size_t written = fwrite(data, 1, size, fp);
         fclose(fp);

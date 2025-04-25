@@ -13,30 +13,67 @@ function cleanupFile(filename) {
     }
 }
 
+async function getAllChannelNames() {
+    try {
+        // Get the functions from our module
+        const getAllChannelNamesPtr = Module.cwrap('getAllChannelNames', 'number', []);
+        const getChannelNamesSize = Module.cwrap('getChannelNamesSize', 'number', []);
+        const getChannelNameAt = Module.cwrap('getChannelNameAt', 'number', ['number']);
+
+        // Get the vector pointer
+        const vectorPtr = getAllChannelNamesPtr();
+        
+        if (vectorPtr === -1) {
+            throw new Error('Failed to get channel names');
+        }
+
+        // Get the size of the vector
+        const size = getChannelNamesSize();
+        const channelNamesArray = [];
+
+        // Get each string from the vector
+        for (let i = 0; i < size; i++) {
+            const strPtr = getChannelNameAt(i);
+            if (strPtr) {
+                const channelName = Module.UTF8ToString(strPtr);
+                channelNamesArray.push(channelName);
+            }
+        }
+
+        return channelNamesArray;
+    } catch (error) {
+        console.error('Error getting channel names:', error);
+        throw error;
+    }
+}
+
 async function processFile(file, fileId) {
     try {
-        let opfs_root = "/opfs";
-        const tempFilename = opfs_root + `/temp_file_${fileId}.mf4`;
-        let chunkSize = 0; // 320 MB chunks
+        const root_path = "/root";
+        const tempFilename = root_path + "/temp_file";
+        let chunkSize = 0;
+
+        // Get the functions from our module
+        const startNewWrite = Module.cwrap("start_new_write", "number", []);
+        const appendToFile = Module.cwrap("append", "number", ["number", "number"]);
+
+        // Start new write operation
+        const startResult = startNewWrite();
+        if (startResult !== 0) {
+            throw new Error(`Failed to start new write operation. Error code: ${startResult}`);
+        }
 
         const fileSize = file.size;
         if (fileSize > 1024 * 1024 * 1024) {
-            chunkSize = 512 * 1024 * 1024;
+            chunkSize = 512 * 1024 * 1024; // 512 MB chunks
         } else {
             chunkSize = fileSize;
         }
         let offset = 0;
 
-        // Get the append function from our module
-        const appendToFile = Module.cwrap("append", "number", ["string", "number", "number"]);
-
-        // TODO(Zhiyang): fix this later because of allocation cost
         const heapPointer = Module._malloc(
             chunkSize * Uint8Array.BYTES_PER_ELEMENT 
         );
-
-        const dirInfo = FS.readdir("/");
-        console.log("OPFS directory info:", dirInfo);
 
         // Process the file in chunks
         while (offset < fileSize) {
@@ -46,9 +83,7 @@ async function processFile(file, fileId) {
 
             Module.HEAPU8.set(chunkUint8Array, heapPointer);
 
-            // Use our append function instead of the writable API
-            const appendResult = appendToFile(tempFilename, heapPointer, chunkUint8Array.length);
-
+            const appendResult = appendToFile(heapPointer, chunkUint8Array.length);
             if (appendResult !== 0) {
                 throw new Error(`Failed to append chunk to file. Error code: ${appendResult}`);
             }
@@ -59,8 +94,8 @@ async function processFile(file, fileId) {
         Module._free(heapPointer);
         console.log("write file to disk");
 
-        const findUMax = Module.cwrap("findUMax", "number", ["string"]);
-        const UMax = findUMax(tempFilename);
+        const findUMax = Module.cwrap("findUMax", "number", []);
+        const UMax = findUMax();
 
         return {
             filename: file.name,
@@ -107,6 +142,42 @@ function processNextInQueue() {
         });
 }
 
+async function getAllValuePoints(channelName) {
+    try {
+        const getAllValuePointsPtr = Module.cwrap('getAllValuePoints', 'number', ['string']);
+        const getPointsSize = Module.cwrap('getPointsSize', 'number', []);
+        const getPointAt = Module.cwrap('getPointAt', 'number', ['number']);
+        
+        const vectorPtr = getAllValuePointsPtr(channelName);
+        
+        if (vectorPtr === -1) {
+            throw new Error('Failed to get value points');
+        }
+        
+        const size = getPointsSize();
+        const points = [];
+        
+        for (let i = 0; i < size; i++) {
+            const pointPtr = Number(getPointAt(i)); // Convert BigInt to Number
+            if (pointPtr === 0) continue;
+            
+            // Read the values as doubles (64-bit floating point)
+            const cycleCount = Module.getValue(pointPtr, 'double');
+            const value = Module.getValue(pointPtr + 8, 'double'); // 8 bytes offset for the second double
+            
+            points.push({
+                cycleCount: Number(cycleCount), // Ensure we convert to Number
+                value: Number(value)
+            });
+        }
+        
+        return points;
+    } catch (error) {
+        console.error('Error getting value points:', error);
+        throw error;
+    }
+}
+
 // Listen for messages from the main thread
 self.addEventListener('message', function(e) {
     const data = e.data;
@@ -120,6 +191,37 @@ self.addEventListener('message', function(e) {
         
         // Try to process next in queue
         processNextInQueue();
+    } 
+    else if (data.cmd === 'getChannelNames') {
+        getAllChannelNames()
+            .then(channelNames => {
+                self.postMessage({
+                    type: 'channelNames',
+                    channelNames: channelNames
+                });
+            })
+            .catch(error => {
+                self.postMessage({
+                    type: 'channelNamesError',
+                    error: error.toString()
+                });
+            });
+    }
+    else if (data.cmd === 'getValuePoints') {
+        getAllValuePoints(data.channelName)
+            .then(points => {
+                self.postMessage({
+                    type: 'valuePoints',
+                    channelName: data.channelName,
+                    points: points
+                });
+            })
+            .catch(error => {
+                self.postMessage({
+                    type: 'valuePointsError',
+                    error: error.toString()
+                });
+            });
     }
 });
 

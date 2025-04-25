@@ -73,6 +73,7 @@ BOOL mDirectFile::ReadAt(M_LINK lAt, M_UINT32 szBytes, void *Into) {
   }
   return FALSE;
 }
+
 BOOL mDirectFile::WriteAt(M_LINK lAt, M_UINT32 szBytes, const void *Data) {
   if (isOpen()) {
     Position(lAt);

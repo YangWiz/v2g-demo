@@ -436,43 +436,290 @@ bool CMdf4FileImport::displayByName(const std::string &name) {
 	return false;
 }
 
+bool CMdf4FileImport::getAllChannels(std::vector<std::string> &result) {
+	for (const auto& dg_ptr : this->m_vDataGroups) {
+		CMdf4DataGroup* pGroup = dg_ptr;
+		M4DGBlock* dg = pGroup->m_dg;
+
+		// Load CG block
+		M4CGBlock* cg = dynamic_cast<M4CGBlock*>(this->m_m4.LoadLink(*dg, M4DGBlock::dg_cg_first));
+		if (!cg) {
+			continue;  // Skip if cg is null
+		}
+
+		// Get first channel
+		M4CNBlock* cn = dynamic_cast<M4CNBlock*>(this->m_m4.LoadLink(*cg, M4CGBlock::cg_cn_first, M4ID_CN));
+
+		// Process channels sequentially
+		while (cn) {
+			if (auto *tx = dynamic_cast<M4TXBlock *>(this->m_m4.LoadLink(*cn, M4CNBlock::cn_tx_name))) {
+				if (const char* rawString = this->GetString(tx)) {
+					result.emplace_back(rawString);
+				}
+				delete tx;
+			}
+
+			M4CNBlock* currentCn = cn;
+			// Get next channel
+			cn = dynamic_cast<M4CNBlock*>(this->m_m4.LoadLink(*cn, M4CNBlock::cn_cn_next, M4ID_CN));
+			this->m_m4.addReadTask(*cg, M4CNBlock::cn_cn_next, M4ID_CN);
+
+			// Clean up the previous channel
+			delete currentCn;
+		}
+
+		// Clean up CG block if no matching channel was found
+		delete cg;
+	}
+
+	return false;
+}
+
+double CMdf4FileImport::getMaxValueByName(const std::string &name) {
+	for (const auto& dg_ptr : this->m_vDataGroups) {
+		CMdf4DataGroup* pGroup = dg_ptr;
+		M4DGBlock* dg = pGroup->m_dg;
+
+		this->m_m4.initReadBuffer(1000);
+
+		// Load CG block
+		M4CGBlock* cg = dynamic_cast<M4CGBlock*>(this->m_m4.LoadLink(*dg, M4DGBlock::dg_cg_first));
+		if (!cg) {
+			continue;  // Skip if cg is null
+		}
+
+		// Get first channel
+		M4CNBlock* cn = dynamic_cast<M4CNBlock*>(this->m_m4.LoadLink(*cg, M4CGBlock::cg_cn_first, M4ID_CN));
+
+		// Process channels sequentially
+		while (cn) {
+			// Check if this channel matches the name
+			if (this->findChannelByName(cn, name)) {
+				// Found matching channel
+				// Clean up resources
+				delete cn;
+				delete cg;
+
+				return cn->cn_val_range_max;
+			}
+
+			// Save current channel before loading the next one
+			M4CNBlock* currentCn = cn;
+
+			// Get next channel
+			cn = dynamic_cast<M4CNBlock*>(this->m_m4.LoadLink(*cn, M4CNBlock::cn_cn_next, M4ID_CN));
+			this->m_m4.addReadTask(*cg, M4CNBlock::cn_cn_next, M4ID_CN);
+
+			// Clean up the previous channel
+			delete currentCn;
+		}
+
+		this->m_m4.commitReadTask();
+		// Clean up CG block if no matching channel was found
+		delete cg;
+	}
+
+	return 0;
+}
+
+double CMdf4FileImport::getMinValueByName(const std::string &name) {
+	for (const auto& dg_ptr : this->m_vDataGroups) {
+		CMdf4DataGroup* pGroup = dg_ptr;
+		M4DGBlock* dg = pGroup->m_dg;
+
+		this->m_m4.initReadBuffer(1000);
+
+		// Load CG block
+		M4CGBlock* cg = dynamic_cast<M4CGBlock*>(this->m_m4.LoadLink(*dg, M4DGBlock::dg_cg_first));
+		if (!cg) {
+			continue;  // Skip if cg is null
+		}
+
+		// Get first channel
+		M4CNBlock* cn = dynamic_cast<M4CNBlock*>(this->m_m4.LoadLink(*cg, M4CGBlock::cg_cn_first, M4ID_CN));
+
+		// Process channels sequentially
+		while (cn) {
+			// Check if this channel matches the name
+			if (this->findChannelByName(cn, name)) {
+				// Found matching channel
+				// Clean up resources
+				delete cn;
+				delete cg;
+
+				return cn->cn_val_range_min;
+			}
+
+			// Save current channel before loading the next one
+			M4CNBlock* currentCn = cn;
+
+			// Get next channel
+			cn = dynamic_cast<M4CNBlock*>(this->m_m4.LoadLink(*cn, M4CNBlock::cn_cn_next, M4ID_CN));
+			this->m_m4.addReadTask(*cg, M4CNBlock::cn_cn_next, M4ID_CN);
+
+			// Clean up the previous channel
+			delete currentCn;
+		}
+
+		this->m_m4.commitReadTask();
+		// Clean up CG block if no matching channel was found
+		delete cg;
+	}
+
+	return 0;
+}
+
+bool CMdf4FileImport::getPointsVecByName(const std::string &name, std::vector<std::pair<double, double>> &result) {
+	for (const auto& dg_ptr : this->m_vDataGroups) {
+		CMdf4DataGroup* pGroup = dg_ptr;
+		M4DGBlock* dg = pGroup->m_dg;
+
+		this->m_m4.initReadBuffer(1000);
+
+		// Load CG block
+		M4CGBlock* cg = dynamic_cast<M4CGBlock*>(this->m_m4.LoadLink(*dg, M4DGBlock::dg_cg_first));
+		if (!cg) {
+			continue;  // Skip if cg is null
+		}
+
+		// Get first channel
+		M4CNBlock* cn = dynamic_cast<M4CNBlock*>(this->m_m4.LoadLink(*cg, M4CGBlock::cg_cn_first, M4ID_CN));
+
+		// Process channels sequentially
+		while (cn) {
+			// Check if this channel matches the name
+			if (this->findChannelByName(cn, name)) {
+				// Found a matching channel
+				const bool ret = this->getPointsVec(pGroup, dg, cg, cn, result);
+
+				// Clean up resources
+				delete cn;
+				delete cg;
+
+				return ret;
+			}
+
+			// Save the current channel before loading the next one
+			M4CNBlock* currentCn = cn;
+
+			// Get the next channel
+			cn = dynamic_cast<M4CNBlock*>(this->m_m4.LoadLink(*cn, M4CNBlock::cn_cn_next, M4ID_CN));
+			this->m_m4.addReadTask(*cg, M4CNBlock::cn_cn_next, M4ID_CN);
+
+			// Clean up the previous channel
+			delete currentCn;
+		}
+
+		this->m_m4.commitReadTask();
+		// Clean up CG block if no matching channel was found
+		delete cg;
+	}
+
+	return false;
+}
+
 bool CMdf4FileImport::getValueVecByName(const std::string &name, std::vector<double> &result) {
-    for (const auto dg_ptr : this->m_vDataGroups) {
-       CMdf4DataGroup* pGroup = dg_ptr;
-       M4DGBlock *dg = pGroup->m_dg;
+	for (const auto& dg_ptr : this->m_vDataGroups) {
+		CMdf4DataGroup* pGroup = dg_ptr;
+		M4DGBlock* dg = pGroup->m_dg;
 
-       const auto cg = dynamic_cast<M4CGBlock *>(this->m_m4.LoadLink(*dg, M4DGBlock::dg_cg_first));
+		this->m_m4.initReadBuffer(1000);
 
-       if (!cg) {
-           continue;  // Skip if cg is null
-       }
+		// Load CG block
+		M4CGBlock* cg = dynamic_cast<M4CGBlock*>(this->m_m4.LoadLink(*dg, M4DGBlock::dg_cg_first));
+		if (!cg) {
+			continue;  // Skip if cg is null
+		}
 
-       auto *cn = dynamic_cast<M4CNBlock *>(this->m_m4.LoadLink(*cg, M4CGBlock::cg_cn_first, M4ID_CN));
+		// Get first channel
+		M4CNBlock* cn = dynamic_cast<M4CNBlock*>(this->m_m4.LoadLink(*cg, M4CGBlock::cg_cn_first, M4ID_CN));
 
-       long long int channelCount = 0;
+		// Process channels sequentially
+		while (cn) {
+			// Check if this channel matches the name
+			if (this->findChannelByName(cn, name)) {
+				// Found matching channel
+				const bool ret = this->getValueVec(pGroup, dg, cg, cn, result);
 
-       while (cn) {
-          channelCount++;
-          if (this->findChannelByName(cn, name)) {
-             const bool ret = this->getValueVec(pGroup, dg, cg, cn, result);
+				// Clean up resources
+				delete cn;
+				delete cg;
 
-             delete cn;  // Clean up cn
-             delete cg;  // Clean up cg
+				return ret;
+			}
 
-             return ret;
-          }
+			// Save current channel before loading the next one
+			M4CNBlock* currentCn = cn;
 
-          auto *next_cn = dynamic_cast<M4CNBlock *>(this->m_m4.LoadLink(*cn, M4CNBlock::cn_cn_next, M4ID_CN));
+			// Get next channel
+			cn = dynamic_cast<M4CNBlock*>(this->m_m4.LoadLink(*cn, M4CNBlock::cn_cn_next, M4ID_CN));
+			this->m_m4.addReadTask(*cg, M4CNBlock::cn_cn_next, M4ID_CN);
 
-          delete cn;  // Delete current cn before moving to next
+			// Clean up the previous channel
+			delete currentCn;
+		}
 
-          cn = next_cn;
-       }
+		this->m_m4.commitReadTask();
+		// Clean up CG block if no matching channel was found
+		delete cg;
+	}
 
-       delete cg;  // Clean up cg after processing all channels
-    }
+	return false;
+}
 
-    return false;
+bool CMdf4FileImport::getPointsVec(CMdf4DataGroup* pGroup, M4DGBlock* dg,
+				   M4CGBlock* cg, M4CNBlock* cn, std::vector<std::pair<double, double>> &result) {
+	const int scanSize = cg->cg_data_bytes + cg->cg_inval_bytes + dg->dg_rec_id_size;
+	const int cycleCount = cg->cg_cycle_count;
+
+	// Pre-allocate memory for the result vector
+	result.reserve(cycleCount);
+
+	// Create calculator once
+	const std::unique_ptr<CMdf4Calc> pCalc(new CMdf4Calc(cn, this->m_m4));
+	if (pCalc->m_pCC == nullptr) {
+		return false;
+	}
+
+	// We leave 200 mb space for our other usages.
+	// We also need to consider the size of the result.
+	// The wasm32 heap memory has 2000 mb, so we have 1800 mb left.
+	// The result size is as same as the buffer size, and it's double (8 Bytes)
+	// So size(result) = 8 * batchSize
+	// We declare batchSize as x, then we get 9x <= 1800 mb.
+	// Then we know x <= 200 mb
+
+	// Determine optimal batch size (balance between memory usage and I/O efficiency)
+	const int BATCH_SIZE = (1024 * 1024) / scanSize;  // Adjust based on your system characteristics
+
+	// Allocate a larger buffer for batched reads
+	const size_t batchScanSize = scanSize * BATCH_SIZE;
+	const std::unique_ptr<M_UINT8[]> batchScan(new M_UINT8[batchScanSize]);
+
+	for (int i = 0; i < cycleCount; i += BATCH_SIZE) {
+		// Calculate actual batch size (handle last partial batch)
+		const int currentBatchSize = std::min(BATCH_SIZE, cycleCount - i);
+
+		// Get multiple records at once
+		if (!pGroup->GetRecord(cg, batchScan.get(), i, i + currentBatchSize - 1)) {
+			return false;
+		}
+
+		// Process each record in the batch
+		for (int j = 0; j < currentBatchSize; j++) {
+			M_UINT8* currentRecord = batchScan.get() + (j * scanSize);
+
+			double value;
+			bool noValue = pGroup->GetRawValueFromRecord(cg, cn, currentRecord, &value);
+
+			if (!noValue) {
+				value = pCalc->MdfCalc(value);
+				result.push_back({static_cast<double>(i) + j, value});
+			}
+		}
+	}
+
+	return true;
 }
 
 bool CMdf4FileImport::getValueVec(CMdf4DataGroup* pGroup, M4DGBlock* dg,
@@ -503,7 +750,6 @@ bool CMdf4FileImport::getValueVec(CMdf4DataGroup* pGroup, M4DGBlock* dg,
 	// Allocate a larger buffer for batched reads
 	const size_t batchScanSize = scanSize * BATCH_SIZE;
 	const std::unique_ptr<M_UINT8[]> batchScan(new M_UINT8[batchScanSize]);
-	printf("batch size is %d, scan size is %d\n", batchScanSize, scanSize);
 
 	for (int i = 0; i < cycleCount; i += BATCH_SIZE) {
 		// Calculate actual batch size (handle last partial batch)
