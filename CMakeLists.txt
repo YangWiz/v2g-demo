@@ -42,7 +42,7 @@ if(EMSCRIPTEN)
             -pthread \
             -s PROXY_TO_PTHREAD \
             -s MALLOC=dlmalloc \
-            -s INITIAL_MEMORY=2gb \
+            -s INITIAL_MEMORY=4gb \
             -flto \
             -O3") # -O3 often needed at link time too for LTO
     endif()
